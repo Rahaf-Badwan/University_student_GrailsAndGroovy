@@ -1,29 +1,61 @@
 package StCo
 
+import grails.rest.Resource
 import grails.validation.ValidationException
+import groovy.util.logging.Slf4j
+
 import static org.springframework.http.HttpStatus.*
 
+@Resource()
+@Slf4j
 class CourseController {
-
-    CourseService courseService
 
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
+    CourseService courseService
+    def springSecurityService
+
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond courseService.list(params), model:[courseCount: courseService.count()]
+        def currentUser = springSecurityService.currentUser
+        boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
+
+        render(view: "index", model: [
+                courseList: courseService.list(params),
+                courseCount: courseService.count(),
+                isAdmin: isAdmin
+        ])
     }
 
+
     def show(Long id) {
-        respond courseService.get(id)
+        def course = courseService.get(id)
+        if (!course) {
+            notFound()
+            return
+        }
+        render(view: "show", model: [course: course])
     }
 
     def create() {
-        respond new Course(params)
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
+            flash.message = "You do not have permission to create new courses."
+            redirect(action: "index")
+            return
+        }
+        render(view: "create", model: [course: new Course(params)])
     }
 
     def save(Course course) {
-        if (course == null) {
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
+            flash.message = "You do not have permission to save courses."
+            redirect(action: "index")
+            return
+        }
+
+        if (!course) {
             notFound()
             return
         }
@@ -31,25 +63,43 @@ class CourseController {
         try {
             courseService.save(course)
         } catch (ValidationException e) {
-            respond course.errors, view:'create'
+            render(view: "create", model: [course: course])
             return
         }
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: 'course.label', default: 'Course'), course.id])
-                redirect course
-            }
-            '*' { respond course, [status: CREATED] }
-        }
+        flash.message = message(code: 'default.created.message', args: [
+                message(code: 'course.label', default: 'Course'),
+                course.id
+        ])
+        redirect(action: "show", id: course.id)
     }
 
     def edit(Long id) {
-        respond courseService.get(id)
+        def course = courseService.get(id)
+        if (!course) {
+            notFound()
+            return
+        }
+
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
+            flash.message = "You do not have permission to edit courses."
+            redirect(action: "index")
+            return
+        }
+
+        render(view: "edit", model: [course: course])
     }
 
     def update(Course course) {
-        if (course == null) {
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
+            flash.message = "You do not have permission to update courses."
+            redirect(action: "index")
+            return
+        }
+
+        if (!course) {
             notFound()
             return
         }
@@ -57,43 +107,45 @@ class CourseController {
         try {
             courseService.save(course)
         } catch (ValidationException e) {
-            respond course.errors, view:'edit'
+            render(view: "edit", model: [course: course])
             return
         }
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: 'course.label', default: 'Course'), course.id])
-                redirect course
-            }
-            '*'{ respond course, [status: OK] }
-        }
+        flash.message = message(code: 'default.updated.message', args: [
+                message(code: 'course.label', default: 'Course'),
+                course.id
+        ])
+        redirect(action: "show", id: course.id)
     }
 
     def delete(Long id) {
-        if (id == null) {
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
+            flash.message = "You do not have permission to delete courses."
+            redirect(action: "index")
+            return
+        }
+
+        def course = courseService.get(id)
+        if (!course) {
             notFound()
             return
         }
 
         courseService.delete(id)
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: 'course.label', default: 'Course'), id])
-                redirect action:"index", method:"GET"
-            }
-            '*'{ render status: NO_CONTENT }
-        }
+        flash.message = message(code: 'default.deleted.message', args: [
+                message(code: 'course.label', default: 'Course'),
+                id
+        ])
+        redirect(action: "index")
     }
 
     protected void notFound() {
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.not.found.message', args: [message(code: 'course.label', default: 'Course'), params.id])
-                redirect action: "index", method: "GET"
-            }
-            '*'{ render status: NOT_FOUND }
-        }
+        flash.message = message(code: 'default.not.found.message', args: [
+                message(code: 'course.label', default: 'Course'),
+                params.id
+        ])
+        redirect(action: "index")
     }
 }

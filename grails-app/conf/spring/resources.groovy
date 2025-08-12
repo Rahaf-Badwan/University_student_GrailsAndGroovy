@@ -1,3 +1,8 @@
-// Place your Spring DSL code here
+import StCo.UserPasswordEncoderListener
+import org.springframework.security.crypto.password.PasswordEncoder
+
 beans = {
+    userPasswordEncoderListener(UserPasswordEncoderListener) {
+        passwordEncoder = ref('passwordEncoder')
+    }
 }

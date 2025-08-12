@@ -15,4 +15,6 @@ interface StudentService {
 
     Student save(Student student)
 
+    // دالة جديدة للبحث عن طالب حسب المستخدم المرتبط
+    Student findByUser(User user)
 }

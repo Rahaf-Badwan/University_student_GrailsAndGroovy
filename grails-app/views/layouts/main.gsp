@@ -8,225 +8,193 @@
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <asset:link rel="icon" href="favicon.ico" type="image/x-ico"/>
-
     <asset:stylesheet src="application.css"/>
 
     <style>
     :root {
-        --primary-color: #4CAF50;
-        --secondary-color: #2E7D32;
+        --primary-color: #003366;   /* درجة الكحلي للفوتر والمنيو */
+        --secondary-color: #004080; /* أفتح شوي للhover */
         --light-color: #f8f9fa;
-        --dark-color: #343a40;
+        --dark-color: #003366;      /* لون الفوتر */
         --text-color: #212529;
+        --sidebar-width: 250px;
     }
-
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         color: var(--text-color);
+        margin: 0;
+        height: 100vh;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+    }
+    /* خلفية كحلية فقط لصفحة تسجيل الدخول */
+    body.login-page {
+        background-color: #003366 !important; /* لون كحلي غامق */
+        color: #003366 !important;
+    }
+    body.login-page::before {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        color: yellow;
+        font-weight: bold;
+        z-index: 9999;
+    }
+    /* خلي الـ main و container نفس لون الخلفية عشان تظهر بشكل صحيح */
+    body.login-page main.main-content,
+    body.login-page .container {
+        background-color: #003366 !important;
+        color: #003366!important;
+    }
+    #content-wrapper {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+    #sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--primary-color);
+        color: #003366;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease;
+        transform: translateX(0);
+        position: fixed;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+    #sidebar.closed {
+        transform: translateX(calc(-1 * var(--sidebar-width)));
+    }
+    #sidebar nav {
+        flex-grow: 1;
+        padding: 1rem;
+    }
+    #sidebar nav ul {
+        list-style: none;
+        padding: 0;
         margin: 0;
     }
-
-    /* Header Styles */
-    .navbar {
-        background-color: var(--primary-color) !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 0.8rem 1rem;
+    #sidebar nav ul li {
+        padding: 15px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
     }
-
-    .navbar-brand {
-        display: flex;
-        align-items: center;
-        font-weight: 600;
-        color: white !important;
-    }
-
-    .navbar-brand img {
-        height: 30px;
-        margin-right: 10px;
-    }
-
-    .navbar-dark .navbar-nav .nav-link {
-        color: rgba(255,255,255,0.9);
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .navbar-dark .navbar-nav .nav-link:hover {
+    #sidebar nav ul li a, #sidebar nav ul li g\\:link {
         color: white;
-        transform: translateY(-2px);
+        text-decoration: none;
+        display: block;
+        font-weight: 600;
     }
-
-    /* Main Content */
-    .main-content {
+    #sidebar nav ul li a:hover,
+    #sidebar nav ul li g\\:link:hover {
+        background-color: var(--secondary-color);
+        cursor: pointer;
+    }
+    #toggle-btn {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1101;
+        background-color: var(--secondary-color);
+        border: none;
+        color: white;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 1.5rem;
+        border-radius: 4px;
+        display: block;
+    }
+    main.main-content {
         flex: 1;
-        padding: 2rem 0;
+        overflow-y: auto;
+        background-color: var(--light-color);
+        padding: 2rem;
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
     }
-
-    /* Footer Styles */
-    .footer {
+    main.main-content.sidebar-closed {
+        margin-left: 0;
+    }
+    .navbar-static-top {
+        display: none;
+    }
+    footer.footer {
         background-color: var(--dark-color);
         color: white;
-        padding: 3rem 0;
-        margin-top: auto;
-    }
-
-    .footer a {
-        color: #6c757d;
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .footer a:hover {
-        color: white;
-        text-decoration: underline;
-    }
-
-    .footer .col {
-        margin-bottom: 1.5rem;
-        padding: 0 15px;
-    }
-
-    .footer img {
-        height: 50px;
-        margin-right: 15px;
-        margin-bottom: 15px;
-        float: left;
-    }
-
-    .footer strong {
-        display: block;
-        color: white;
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        clear: both;
-    }
-
-    .footer p {
-        color: #adb5bd;
-        line-height: 1.6;
-        margin-bottom: 0;
-    }
-
-    .footer .footer-copyright {
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding-top: 20px;
-        margin-top: 20px;
+        padding: 1rem 0;
         text-align: center;
-        color: #6c757d;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-        .navbar-brand img {
-            height: 25px;
-        }
-
-        .footer .row {
-            flex-direction: column;
-        }
-
-        .footer .col {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .footer img {
-            float: none !important;
-            display: block;
-            margin: 0 auto 15px;
-        }
     }
     </style>
 
     <g:layoutHead/>
 </head>
 
-<body>
-<!-- Header -->
-<nav class="navbar navbar-expand-lg navbar-dark navbar-static-top" role="navigation">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <asset:image src="grails.svg" alt="Grails Logo"/>
-            <span>Grails Application</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+<g:form id="logoutForm" url="[controller:'logout']" method="POST" style="display:none;"></g:form>
 
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav ml-auto">
-                <!-- Home -->
-                <li class="nav-item">
-                    <a class="nav-link" href="/">🏠 Home</a>
-                </li>
-                <!-- Student -->
-                <li class="nav-item">
-                    <g:link class="nav-link" controller="student" action="index">👤 Student</g:link>
-                </li>
-                <!-- Course -->
-                <li class="nav-item">
-                    <g:link class="nav-link" controller="course" action="index">📘 Course</g:link>
-                </li>
-                <!-- Enrollment -->
-                <li class="nav-item">
-                    <g:link class="nav-link" controller="enrollment" action="index">📝 Enrollment</g:link>
-                </li>
-            </ul>
-        </div>
+<body class="${controllerName == 'login' && actionName == 'auth' ? 'login-page' : ''}">
+
+<sec:ifLoggedIn>
+    <button id="toggle-btn" aria-label="Toggle menu">☰ Menu</button>
+
+    <div id="content-wrapper">
+        <aside id="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="/">🏠 Home</a></li>
+                    <li><g:link controller="student" action="index">👤 Student</g:link></li>
+                    <li><g:link controller="course" action="index">📘 Course</g:link></li>
+                    <li><g:link controller="enrollment" action="index">📝 Enrollment</g:link></li>
+
+
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">🚪 Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main id="mainContent" class="main-content">
+            <div class="container">
+                <g:layoutBody/>
+            </div>
+        </main>
     </div>
-</nav>
 
-
-
-<!-- Main Content -->
-<main class="main-content">
-    <div class="container">
-        <g:layoutBody/>
-    </div>
-</main>
-
-<!-- Footer -->
-<footer class="footer" role="contentinfo">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <a href="http://guides.grails.org" target="_blank">
-                    <asset:image src="advancedgrails.svg" alt="Grails Guides"/>
-                </a>
-                <strong><a href="http://guides.grails.org" target="_blank">Grails Guides</a></strong>
-                <p>Building your first Grails app? Looking to add security, or create a Single-Page-App? Check out the <a href="http://guides.grails.org" target="_blank">Grails Guides</a> for step-by-step tutorials.</p>
-            </div>
-
-            <div class="col-md-4">
-                <a href="http://docs.grails.org" target="_blank">
-                    <asset:image src="documentation.svg" alt="Grails Documentation"/>
-                </a>
-                <strong><a href="http://docs.grails.org" target="_blank">Documentation</a></strong>
-                <p>Ready to dig in? You can find in-depth documentation for all the features of Grails in the <a href="http://docs.grails.org" target="_blank">User Guide</a>.</p>
-            </div>
-
-            <div class="col-md-4">
-                <a href="https://slack.grails.org" target="_blank">
-                    <asset:image src="slack.svg" alt="Grails Slack"/>
-                </a>
-                <strong><a href="https://slack.grails.org" target="_blank">Join the Community</a></strong>
-                <p>Get feedback and share your experience with other Grails developers in the community <a href="https://slack.grails.org" target="_blank">Slack channel</a>.</p>
-            </div>
-        </div>
-
-        <div class="footer-copyright">
+    <footer class="footer" role="contentinfo">
+        <div class="container">
             <p>&copy; <g:formatDate date="${new Date()}" format="yyyy"/> Grails Application. All rights reserved.</p>
         </div>
-    </div>
-</footer>
+    </footer>
+</sec:ifLoggedIn>
+
+<sec:ifNotLoggedIn>
+    <main class="main-content" style="flex: 1; margin-left: 0;">
+        <div class="container">
+            <g:layoutBody/>
+        </div>
+    </main>
+</sec:ifNotLoggedIn>
 
 <div id="spinner" class="spinner" style="display:none;">
     <g:message code="spinner.alt" default="Loading&hellip;"/>
 </div>
 
 <asset:javascript src="application.js"/>
+
+<script>
+    const toggleBtn = document.getElementById('toggle-btn');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+
+    if(toggleBtn && sidebar && mainContent) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            mainContent.classList.toggle('sidebar-closed');
+        });
+    }
+</script>
+
 </body>
 </html>

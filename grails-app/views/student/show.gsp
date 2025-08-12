@@ -42,6 +42,15 @@
                     <div class="mb-3">
                         <strong>Email:</strong> ${student?.email}
                     </div>
+                    <div class="mb-3">
+                        <strong>Profile Photo:</strong><br/>
+                        <g:if test="${student?.profilePhoto}">
+                            <img src="${createLink(controller:'student', action:'profilePhoto', id:student?.id)}" alt="Profile Photo" style="max-width: 200px; max-height: 200px;"/>
+                        </g:if>
+                        <g:else>
+                            <p>No profile photo uploaded.</p>
+                        </g:else>
+                    </div>
                 </div>
 
                 <g:form resource="${student}" method="DELETE" class="mt-3">

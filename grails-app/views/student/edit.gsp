@@ -39,22 +39,35 @@
                     </ul>
                 </g:hasErrors>
 
-                <g:form resource="${student}" method="PUT">
+                <g:form resource="${student}" method="PUT" enctype="multipart/form-data">
                     <g:hiddenField name="version" value="${student?.version}" />
 
                     <fieldset class="form">
 
                         <div class="mb-3">
                             <label for="name">Name *</label>
-                            <g:textField name="name" value="${student?.name}" required="required"/>
+                            <g:textField id="name" name="name" value="${student?.name}" required="required"/>
                             <g:fieldError field="name" bean="${student}" class="text-danger" />
                         </div>
 
                         <div class="mb-3">
                             <label for="email">Email *</label>
-                            <g:textField name="email" value="${student?.email}" required="required"/>
+                            <g:textField id="email" name="email" value="${student?.email}" required="required"/>
                             <g:fieldError field="email" bean="${student}" class="text-danger" />
                         </div>
+
+                        <div class="mb-3">
+                            <label for="profilePhoto">Profile Photo</label>
+                            <g:if test="${student?.profilePhoto}">
+                                <br/>
+                                <img src="${createLink(controller:'student', action:'profilePhoto', id:student.id)}"
+                                     alt="Profile Photo" style="max-width: 200px; max-height: 200px;"/>
+                                <br/>
+                                <small>Upload new image to replace the existing one</small>
+                            </g:if>
+                            <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" />
+                        </div>
+
 
                         <!-- No enrollments field here -->
                     </fieldset>
