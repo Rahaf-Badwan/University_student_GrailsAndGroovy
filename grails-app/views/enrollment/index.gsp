@@ -17,8 +17,6 @@
                     <li><a class="home" href="${createLink(uri: '/')}">
                         <g:message code="default.home.label" />
                     </a></li>
-
-                <!-- زر إنشاء يظهر فقط للأدمن -->
                     <g:if test="${isAdmin}">
                         <li>
                             <g:link class="create" action="create">
@@ -30,6 +28,47 @@
             </div>
         </section>
 
+        <!-- Search and Sort Form -->
+        <section class="row mb-3">
+            <div class="col-12">
+                <g:form controller="enrollment" action="index" method="get" class="form-inline mb-3" id="searchForm">
+                    <!-- البحث باسم المستخدم -->
+                    <input type="text" name="query" placeholder="Search ..." value="${params.query ?: ''}" class="form-control mr-2" />
+
+                    <!-- نطاق GPA -->
+                    <input type="number" step="0.1" name="gpaMin" id="gpaMin" placeholder="GPA Min"
+                           value="${params.gpaMin ?: ''}" class="form-control mr-2" min="0" max="4" />
+                    <input type="number" step="0.1" name="gpaMax" id="gpaMax" placeholder="GPA Max"
+                           value="${params.gpaMax ?: ''}" class="form-control mr-2" min="0" max="4" />
+
+                    <!-- السورت -->
+                    <label for="sortBy" class="mr-2">Sort by:</label>
+                    <select name="sortBy" id="sortBy" class="form-control mr-2">
+                        <option value="">-- sortBy --</option>
+                        <option value="username" ${params.sortBy == 'username' ? 'selected' : ''}>Student Name</option>
+                        <option value="enrollmentDate" ${params.sortBy == 'enrollmentDate' ? 'selected' : ''}>Enrollment Date</option>
+                        <option value="grade" ${params.sortBy == 'grade' ? 'selected' : ''}>Grade</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </g:form>
+
+                <script>
+                    document.getElementById('searchForm').addEventListener('submit', function(e) {
+                        const gpaMin = parseFloat(document.getElementById('gpaMin').value) || 0;
+                        const gpaMax = parseFloat(document.getElementById('gpaMax').value) || 4;
+
+                        if (gpaMax < gpaMin) {
+                            alert("GPA Max cannot be less than GPA Min");
+                            e.preventDefault(); // يمنع الفورم من الإرسال
+                        }
+                    });
+                </script>
+
+            </div>
+        </section>
+
+        <!-- Enrollment List -->
         <section class="row">
             <div id="list-enrollment" class="col-12 content scaffold-list" role="main">
                 <h1><g:message code="default.list.label" args="[entityName]" /></h1>
@@ -44,8 +83,8 @@
                         <th>Student Name</th>
                         <th>Course Title</th>
                         <th>Enrollment Date</th>
-
-                    <!-- عمود الأوامر يظهر فقط للأدمن -->
+                        <th>Grade</th>
+                        <th>GPA</th>
                         <g:if test="${isAdmin}">
                             <th>Actions</th>
                         </g:if>
@@ -55,20 +94,22 @@
                     <g:each in="${enrollmentList}" var="enrollment">
                         <tr>
                             <td>
-                                <!-- اسم الطالب كرابط للتعديل فقط للأدمن، أما المستخدم العادي فقط يعرض الاسم -->
                                 <g:if test="${isAdmin}">
                                     <g:link action="edit" resource="${enrollment}">${enrollment.student?.name}</g:link>
                                 </g:if>
-                                <g:else>
-                                    ${enrollment.student?.name}
-                                </g:else>
+                                <g:else>${enrollment.student?.name}</g:else>
                             </td>
                             <td>${enrollment.course?.title}</td>
                             <td>
                                 <g:formatDate date="${enrollment.enrollmentDate}" format="yyyy-MM-dd" />
                             </td>
-
-                        <!-- أزرار تعديل وحذف تظهر فقط للأدمن -->
+                            <td>${enrollment.grade ?: 'N/A'}</td>
+                            <td>
+                                <g:if test="${gpaList}">
+                                    <g:set var="gpaItem" value="${gpaList.find { it.studentId == enrollment.student?.id }}" />
+                                    ${gpaItem?.gpa ?: 'N/A'}
+                                </g:if>
+                            </td>
                             <g:if test="${isAdmin}">
                                 <td>
                                     <g:link class="btn btn-sm btn-primary" action="edit" resource="${enrollment}">Edit</g:link>
@@ -90,33 +131,6 @@
                 </g:if>
             </div>
         </section>
-
-        <g:if test="${isAdmin}">
-            <!-- جدول GPA لكل الطلاب -->
-            <section class="row" style="margin-top: 3rem;">
-                <div id="list-gpa" class="col-12 content scaffold-list" role="main">
-                    <h2>Students GPA</h2>
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>GPA</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <g:each in="${gpaList}" var="gpaItem">
-                            <tr>
-                                <td>${gpaItem.studentName}</td>
-                                <td>${gpaItem.gpa}</td>
-                            </tr>
-                        </g:each>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </g:if>
-
-
     </div>
 </div>
 </body>

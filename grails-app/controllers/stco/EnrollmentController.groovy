@@ -12,42 +12,76 @@ class EnrollmentController {
     def springSecurityService
 
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
-    def index(Integer max) {
+    def index(Integer max, Double gpaMin, Double gpaMax, String query, String sortBy) {
         params.max = Math.min(max ?: 10, 100)
         def currentUser = springSecurityService.currentUser
         boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
 
-        def enrollments = Enrollment.list(params)
+        def enrollmentsCriteria = Enrollment.createCriteria()
 
-        // حساب GPA لجميع الطلاب (لو أدمن) أو GPA الطالب نفسه فقط
-        def gpaList
-        if (isAdmin) {
-            def students = Student.list()
-            gpaList = students.collect { student ->
-                [
-                        studentId: student.id,
-                        studentName: student.name,
-                        gpa: enrollmentService.calculateGPA(student.id)
-                ]
-            }
-        } else {
-            def student = Student.findByUser(currentUser)
-            if (student) {
-                gpaList = [[
-                                   studentId: student.id,
-                                   studentName: student.name,
-                                   gpa: enrollmentService.calculateGPA(student.id)
-                           ]]
+        def enrollments = enrollmentsCriteria.list(params) {
+            if (isAdmin) {
+                if (query) {
+                    or {
+                        // البحث في اسم الطالب
+                        student {
+                            or {
+                                ilike('name', "%${query}%")
+                                user { ilike('username', "%${query}%") }
+                            }
+                        }
+                        // البحث في عنوان الكورس
+                        course { ilike('title', "%${query}%") }
+                        // البحث في الدرجة (لو الرقم ممكن)
+                        if (query.isNumber()) eq('grade', query.toDouble())
+                    }
+                }
             } else {
-                gpaList = []
+                // للمستخدم العادي: فقط تسجيلاته
+                def student = Student.findByUser(currentUser)
+                if (student) eq('student', student)
+            }
+
+            // فرز حسب dropdown (default ascending/descending داخلي)
+            if (sortBy) {
+                switch (sortBy) {
+                    case 'username':
+                        student { order('name') }
+                        break
+                    case 'enrollmentDate':
+                        order('enrollmentDate')
+                        break
+                    case 'grade':
+                        order('grade')
+                        break
+                }
+            }
+        }
+
+        // حساب GPA لكل تسجيل
+        def gpaList = enrollments.collect { enrollment ->
+            [
+                    enrollment: enrollment,
+                    gpa: enrollmentService.calculateGPA(enrollment.student.id)
+            ]
+        }
+
+        // فلترة حسب GPA مع تحقق من الصحة
+        if (gpaMin != null && gpaMax != null) {
+            if (gpaMax < gpaMin) {
+                flash.message = "GPA Max cannot be less than GPA Min."
+                gpaList = []  // أو ممكن تجاهل الفلترة بالكامل
+            } else {
+                gpaList = gpaList.findAll { it.gpa >= gpaMin && it.gpa <= gpaMax }
             }
         }
 
         render(view: "index", model: [
-                enrollmentList: enrollments,
-                enrollmentCount: enrollments.size(),
+                enrollmentList: gpaList.collect { it.enrollment },
+                enrollmentCount: gpaList.size(),
                 isAdmin: isAdmin,
-                gpaList: gpaList
+                gpaList: gpaList.collect { [studentId: it.enrollment.student.id, gpa: it.gpa] },
+                params: params
         ])
     }
 
@@ -185,29 +219,40 @@ class EnrollmentController {
         ])
         redirect(action: "index")
     }
+
     def gpa() {
         def currentUser = springSecurityService.currentUser
         boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
 
-        if (!isAdmin) {
-            // إذا مش أدمن، تسمح له يشوف GPA لكل الطلاب (حسب طلبك)
-            // هنا لو بدك ممكن تعمل تحقق أو لا
+        def gpaList
+
+        if (isAdmin) {
+            // الأدمن يشوف كل الطلاب
+            def students = Student.list()
+            gpaList = students.collect { student ->
+                [
+                        studentId  : student.id,
+                        studentName: student.name,
+                        gpa        : enrollmentService.calculateGPA(student.id)
+                ]
+            }
+        } else {
+            // اليوزر يشوف GPA تبعه فقط
+            def student = Student.findByUser(currentUser)
+            if (student) {
+                gpaList = [[
+                                   studentId  : student.id,
+                                   studentName: student.name,
+                                   gpa        : enrollmentService.calculateGPA(student.id)
+                           ]]
+            } else {
+                gpaList = []
+            }
         }
 
-        // نجيب كل الطلاب
-        def students = Student.list()
-
-        // نحسب GPA لكل طالب
-        def gpaList = students.collect { student ->
-            [
-                    studentId  : student.id,
-                    studentName: student.name,
-                    gpa        : enrollmentService.calculateGPA(student.id)
-            ]
-        }
-
-        render(view: "gpaAll", model: [
-                gpaList: gpaList
+        render(view: "gpa", model: [
+                gpaList: gpaList,
+                isAdmin: isAdmin
         ])
     }
 

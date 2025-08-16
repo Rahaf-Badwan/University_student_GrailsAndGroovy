@@ -27,6 +27,25 @@
             </div>
         </section>
 
+        <!-- Search and Sort -->
+        <section class="row mb-3">
+            <g:form controller="student" action="index" method="get" class="form-inline">
+                <input type="text" name="query" placeholder="Search ..."
+                       value="${params.query ?: ''}" class="form-control mr-2" />
+
+                <label for="sortBy" class="mr-2">Sort by:</label>
+                <select name="sortBy" id="sortBy" class="form-control mr-2"
+                        onchange="this.form.submit()">
+                    <option value="">-- Select --</option>
+                    <option value="name" ${params.sortBy == 'name' ? 'selected' : ''}>Name</option>
+                    <option value="email" ${params.sortBy == 'email' ? 'selected' : ''}>Email</option>
+                    <option value="username" ${params.sortBy == 'username' ? 'selected' : ''}>Username</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">Search</button>
+            </g:form>
+        </section>
+
         <!-- Student List -->
         <section class="row">
             <div id="list-student" class="col-12 content scaffold-list" role="main">
@@ -42,6 +61,7 @@
                         <th>Photo</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Username</th>
                         <g:if test="${isAdmin}">
                             <th>Actions</th>
                         </g:if>
@@ -53,11 +73,11 @@
                             <td>
                                 <g:if test="${student.profilePhoto}">
                                     <img src="${createLink(controller:'student', action:'profilePhoto', id:student.id)}"
-                                         alt="Profile Photo" style="max-width: 50px; max-height: 50px; border-radius: 50%;"/>
+                                         alt="Profile Photo" style="max-width:50px; max-height:50px; border-radius:50%;" />
                                 </g:if>
                                 <g:else>
                                     <img src="${resource(dir:'images', file:'default-profile.png')}"
-                                         alt="No Photo" style="max-width: 50px; max-height: 50px; border-radius: 50%; opacity: 0.5;" />
+                                         alt="No Photo" style="max-width:50px; max-height:50px; border-radius:50%; opacity:0.5;" />
                                 </g:else>
                             </td>
                             <td>
@@ -69,6 +89,7 @@
                                 </g:else>
                             </td>
                             <td>${student.email}</td>
+                            <td>${student.user?.username}</td>
                             <g:if test="${isAdmin}">
                                 <td>
                                     <g:link class="btn btn-sm btn-primary" action="edit" resource="${student}">Edit</g:link>

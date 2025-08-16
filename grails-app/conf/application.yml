@@ -1,8 +1,8 @@
 grails:
   controllers:
     upload:
-      maxFileSize: 5MB       # الحد الأقصى لحجم الملف الواحد
-      maxRequestSize: 5MB    # الحد الأقصى لحجم الطلب الكلي
+      maxFileSize: 5MB
+      maxRequestSize: 5MB
       server:
         tomcat:
           max-http-post-size: 5242880
@@ -14,6 +14,8 @@ grails:
         authorityJoinClassName: 'StCo.UserRole'
       authority:
         className: 'StCo.Role'
+      password:
+        algorithm: bcrypt
 
 hibernate:
   cache:

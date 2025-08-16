@@ -7,8 +7,6 @@ import groovy.util.logging.Slf4j
 @Transactional
 class EnrollmentService {
 
-    EnrollmentRepository enrollmentRepository
-
     /**
      * تسجيل طالب في كورس بعد التحقق من عدم التكرار
      */
@@ -27,7 +25,8 @@ class EnrollmentService {
         }
 
         log.info("✅ [save] Saving enrollment for student ${enrollment.student?.id} in course ${enrollment.course?.id}")
-        enrollmentRepository.save(enrollment)
+        enrollment.save(failOnError: true)
+        return enrollment
     }
 
     /**
@@ -35,7 +34,7 @@ class EnrollmentService {
      */
     def get(Long id) {
         log.info("📦 [get] Fetching enrollment with ID: $id")
-        enrollmentRepository.get(id)
+        Enrollment.get(id)
     }
 
     /**
@@ -43,14 +42,14 @@ class EnrollmentService {
      */
     def list(Map args) {
         log.info("📋 [list] Listing enrollments with params: $args")
-        enrollmentRepository.list(args)
+        Enrollment.list(args)
     }
 
     /**
      * عدد كل التسجيلات
      */
     def count() {
-        def total = enrollmentRepository.count()
+        def total = Enrollment.count()
         log.info("🔢 [count] Total number of enrollments: $total")
         return total
     }
@@ -60,7 +59,13 @@ class EnrollmentService {
      */
     def delete(Long id) {
         log.info("🗑️ [delete] Deleting enrollment with ID: $id")
-        enrollmentRepository.delete(id)
+        def enrollment = Enrollment.get(id)
+        if (enrollment) {
+            enrollment.delete(flush: true)
+            log.info("✅ Enrollment $id deleted successfully")
+        } else {
+            log.warn("⚠️ Enrollment $id not found, cannot delete")
+        }
     }
 
     /**
@@ -72,7 +77,7 @@ class EnrollmentService {
         def student = Student.get(studentId)
         def enrollments = Enrollment.findAllByStudent(student)
 
-        if (enrollments.isEmpty()) {
+        if (!student || enrollments.isEmpty()) {
             log.info("ℹ️ Student $studentId has no enrollments. GPA = 0.0")
             return 0.0
         }

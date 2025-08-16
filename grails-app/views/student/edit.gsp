@@ -55,6 +55,24 @@
                             <g:textField id="email" name="email" value="${student?.email}" required="required"/>
                             <g:fieldError field="email" bean="${student}" class="text-danger" />
                         </div>
+                        <div class="mb-3">
+                            <label for="username">Username *</label>
+                            <g:textField id="username" name="username" value="${student?.user?.username}" required="required" />
+                            <g:fieldError field="username" bean="${student?.user}" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password">Password</label>
+                            <g:passwordField id="password" name="password" />
+                            <g:fieldError field="password" bean="${student?.user}" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <g:passwordField id="confirmPassword" name="confirmPassword" />
+                            <!-- عادة ما يتم التحقق في الكود وليس من الجافا، فلا يوجد فالديرور هنا -->
+                        </div>
+
 
                         <div class="mb-3">
                             <label for="profilePhoto">Profile Photo</label>

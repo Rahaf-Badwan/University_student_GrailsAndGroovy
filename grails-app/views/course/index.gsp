@@ -8,6 +8,7 @@
 <body>
 <div id="content" role="main">
     <div class="container">
+
         <!-- Navigation -->
         <section class="row">
             <a href="#list-course" class="skip" tabindex="-1">
@@ -19,11 +20,34 @@
                         <g:message code="default.home.label" />
                     </a></li>
                     <g:if test="${isAdmin}">
-                        <li><g:link class="create" action="create">
-                            <g:message code="default.new.label" args="[entityName]" />
-                        </g:link></li>
+                        <li>
+                            <g:link class="create" action="create">
+                                <g:message code="default.new.label" args="[entityName]" />
+                            </g:link>
+                        </li>
                     </g:if>
                 </ul>
+            </div>
+        </section>
+
+        <!-- Search and Sort Form -->
+        <section class="row mb-3">
+            <div class="col-12">
+                <g:form controller="course" action="index" method="get" class="form-inline" id="searchForm">
+                    <!-- البحث بالـ Title وDescription وCredits -->
+                    <input type="text" name="query" placeholder="Search ..."
+                           value="${params.query ?: ''}" class="form-control mr-2" />
+
+                    <label for="sortBy" class="mr-2">Sort by:</label>
+                    <select name="sortBy" id="sortBy" class="form-control mr-2" onchange="this.form.submit()">
+                        <option value="">-- sortBy --</option>
+                        <option value="title" ${params.sortBy == 'title' ? 'selected' : ''}>Title</option>
+                        <option value="description" ${params.sortBy == 'description' ? 'selected' : ''}>Description</option>
+                        <option value="credits" ${params.sortBy == 'credits' ? 'selected' : ''}>Credits</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </g:form>
             </div>
         </section>
 
@@ -54,9 +78,7 @@
                                 <g:if test="${isAdmin}">
                                     <g:link action="edit" resource="${course}">${course.title}</g:link>
                                 </g:if>
-                                <g:else>
-                                    ${course.title}
-                                </g:else>
+                                <g:else>${course.title}</g:else>
                             </td>
                             <td>${course.description}</td>
                             <td>${course.credits}</td>
@@ -81,6 +103,7 @@
                 </g:if>
             </div>
         </section>
+
     </div>
 </div>
 </body>

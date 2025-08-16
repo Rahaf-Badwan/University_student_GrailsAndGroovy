@@ -42,7 +42,7 @@
                     </ul>
                 </g:hasErrors>
 
-                <g:form resource="${student}" method="POST" class="needs-validation" enctype="multipart/form-data">
+                <g:form controller="student" action="save" method="POST" enctype="multipart/form-data">
                     <div class="card p-4 shadow-sm">
                         <fieldset class="form">
 
@@ -58,7 +58,23 @@
                                 <g:fieldError bean="${student}" field="email" class="text-danger" />
                             </div>
 
+                            <!-- حقل اسم المستخدم -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username *</label>
+                                <input type="text" id="username" name="username" required="" value="${params.username ?: ''}" />
+                            </div>
 
+                            <!-- حقل كلمة السر -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" id="password" name="password" required="" />
+                            </div>
+
+                            <!-- حقل تأكيد كلمة السر -->
+                            <div class="mb-3">
+                                <label for="passwordConfirm" class="form-label">Confirm Password *</label>
+                                <input type="password" id="passwordConfirm" name="passwordConfirm" required="" />
+                            </div>
 
                             <!-- حقل رفع الصورة -->
                             <div class="mb-3">

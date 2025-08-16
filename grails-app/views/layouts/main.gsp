@@ -146,12 +146,11 @@
                     <li><g:link controller="student" action="index">👤 Student</g:link></li>
                     <li><g:link controller="course" action="index">📘 Course</g:link></li>
                     <li><g:link controller="enrollment" action="index">📝 Enrollment</g:link></li>
-
-
                     <li>
                         <a href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">🚪 Logout</a>
                     </li>
                 </ul>
+
             </nav>
         </aside>
 

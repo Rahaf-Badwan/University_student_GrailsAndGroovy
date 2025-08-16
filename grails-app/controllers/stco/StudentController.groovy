@@ -4,6 +4,8 @@ import grails.rest.Resource
 import grails.validation.ValidationException
 import groovy.util.logging.Slf4j
 
+import grails.gorm.transactions.Transactional
+
 import static org.springframework.http.HttpStatus.*
 
 @Resource()
@@ -15,19 +17,60 @@ class StudentController {
     StudentService studentService
     def springSecurityService
 
-    def index(Integer max) {
-        def currentUser = springSecurityService.currentUser
+    def index(Integer max, String query, String sortBy) {
         params.max = Math.min(max ?: 10, 100)
+        def currentUser = springSecurityService.currentUser
+        boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
 
-        def studentList = studentService.list(params)
-        def studentCount = studentService.count()
+        def studentList
+        def studentCount
+
+        if (isAdmin) {
+            // للأدمن: عرض كل الطلاب مع البحث
+            if (query) {
+                studentList = Student.createCriteria().list(params) {
+                    createAlias('user', 'u') // لتجنب QueryException
+                    or {
+                        ilike('name', "%${query}%")
+                        ilike('email', "%${query}%")
+                        ilike('u.username', "%${query}%")
+                    }
+                    if (sortBy) {
+                        if (sortBy == 'name') order('name', 'asc')
+                        else if (sortBy == 'email') order('email', 'asc')
+                        else if (sortBy == 'username') order('u.username', 'asc')
+                    }
+                }
+                studentCount = studentList.totalCount
+            } else {
+                studentList = Student.createCriteria().list(params) {
+                    createAlias('user', 'u')
+                    if (sortBy) {
+                        if (sortBy == 'name') order('name', 'asc')
+                        else if (sortBy == 'email') order('email', 'asc')
+                        else if (sortBy == 'username') order('u.username', 'asc')
+                    }
+                }
+                studentCount = studentList.totalCount
+            }
+        } else {
+            // للمستخدم العادي: يعرض فقط الطالب المرتبط باليوزر الحالي
+            def student = Student.findByUser(currentUser)
+            studentList = student ? [student] : []
+            studentCount = studentList.size()
+        }
 
         render(view: "index", model: [
                 studentList: studentList,
                 studentCount: studentCount,
-                isAdmin: currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
+                isAdmin: isAdmin,
+                query: query,
+                sortBy: sortBy
         ])
     }
+
+
+
 
     def create() {
         def currentUser = springSecurityService.currentUser
@@ -38,71 +81,76 @@ class StudentController {
         }
         render(view: "create", model: [student: new Student(params)])
     }
-    def show(Long id) {
-        def student = studentService.get(id)
-        if (!student) {
-            notFound()
+    def show() {
+        def currentUser = springSecurityService.currentUser
+        if (!currentUser) {
+            flash.message = "Please login first"
+            redirect(controller: "login", action: "auth")
             return
         }
 
-        def currentUser = springSecurityService.currentUser
-
-        if (!currentUser.authorities.any { it.authority in ['ROLE_ADMIN', 'ROLE_STUDENT'] }) {
-            flash.message = "Access denied"
+        def student = Student.findByUser(currentUser)
+        if (!student) {
+            flash.message = "Student data not found."
             redirect(action: "index")
             return
         }
 
-        render(view: "show", model: [student: student])
+        // جلب التسجيلات الخاصة بالطالب
+        def enrollments = Enrollment.findAllByStudent(student)
+        def courses = enrollments.collect { it.course }
+
+        render(view: "show", model: [student: student, courses: courses])
     }
 
 
-    def save(Student student) {
-        def currentUser = springSecurityService.currentUser
-        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
-            flash.message = "You do not have permission to save students."
-            redirect(action: "index")
+
+
+    @Transactional
+    def save() {
+        // تحقق من تطابق كلمة السر وتأكيدها
+        if (params.password != params.passwordConfirm) {
+            flash.message = "Passwords do not match"
+            render(view: 'create', model: [params: params])
             return
         }
 
-        if (!student) {
-            notFound()
+        def user = new User(username: params.username)
+//        user.password = springSecurityService.encodePassword(params.password)
+        user.password =params.password
+
+        if (!user.save(flush: true)) {
+            // عرض الأخطاء على الفورم مع بيانات المستخدم (username مثلاً)
+            render(view: 'create', model: [user: user])
             return
         }
 
-        // عيّن المستخدم الحالي للطالب تلقائياً
-        student.user = currentUser
+        def role = Role.findByAuthority('ROLE_STUDENT')
+        UserRole.create(user, role, true)
 
-        def profilePhotoFile = request.getFile('profilePhoto')
-        if (profilePhotoFile && !profilePhotoFile.empty) {
-            if (!profilePhotoFile.contentType.startsWith('image/')) {
-                student.errors.rejectValue('profilePhoto', 'invalid.file.type', 'File must be an image.')
-                render(view: "create", model: [student: student])
-                return
-            }
-            if (profilePhotoFile.size > 5 * 1024 * 1024) {
-                student.errors.rejectValue('profilePhoto', 'file.too.large', 'File size must be less than 5MB.')
-                render(view: "create", model: [student: student])
-                return
-            }
+        def photoFile = request.getFile('profilePhoto')
+        def student = new Student(
+                name: params.name,
+                email: params.email,
+                user: user
+        )
 
-            student.profilePhoto = profilePhotoFile.bytes
-            student.profilePhotoFilename = profilePhotoFile.originalFilename
+        if (photoFile && !photoFile.empty) {
+            student.profilePhoto = photoFile.bytes
+            student.profilePhotoFilename = photoFile.originalFilename
         }
 
-        try {
-            studentService.save(student)
-        } catch (ValidationException e) {
-            render(view: "create", model: [student: student])
+        if (!student.save(flush: true)) {
+            render(view: 'create', model: [student: student])
             return
         }
 
-        flash.message = message(code: 'default.created.message', args: [
-                message(code: 'student.label', default: 'Student'),
-                student.id
-        ])
-        redirect(action: "show", id: student.id)
+        flash.message = "Student and user created successfully"
+        redirect(action: "index")
     }
+
+
+
 
     def edit(Long id) {
         def currentUser = springSecurityService.currentUser
@@ -121,56 +169,42 @@ class StudentController {
         render(view: "edit", model: [student: student])
     }
 
-    def update(Student student) {
-        def currentUser = springSecurityService.currentUser
-        if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
-            flash.message = "You do not have permission to update students."
-            redirect(action: "index")
-            return
-        }
-
+    def update() {
+        def student = Student.get(params.id)
         if (!student) {
             notFound()
             return
         }
 
-        def existingStudent = studentService.get(student.id)
-        // حافظ على المستخدم القديم بدون تغيير
-        student.user = existingStudent.user
+        student.properties = params
 
-        def profilePhotoFile = request.getFile('profilePhoto')
-        if (profilePhotoFile && !profilePhotoFile.empty) {
-            if (!profilePhotoFile.contentType.startsWith('image/')) {
-                student.errors.rejectValue('profilePhoto', 'invalid.file.type', 'File must be an image.')
-                render(view: "edit", model: [student: student])
-                return
-            }
-            if (profilePhotoFile.size > 5 * 1024 * 1024) {
-                student.errors.rejectValue('profilePhoto', 'file.too.large', 'File size must be less than 5MB.')
-                render(view: "edit", model: [student: student])
-                return
-            }
-
-            student.profilePhoto = profilePhotoFile.bytes
-            student.profilePhotoFilename = profilePhotoFile.originalFilename
-        } else {
-            student.profilePhoto = existingStudent.profilePhoto
-            student.profilePhotoFilename = existingStudent.profilePhotoFilename
+        // تحديث اسم المستخدم
+        if (params.username) {
+            student.user.username = params.username
         }
 
-        try {
-            studentService.save(student)
-        } catch (ValidationException e) {
+        // تحديث كلمة المرور (لو غيرها)
+        if (params.password && params.password == params.confirmPassword) {
+            student.user.password = params.password
+        } else if (params.password != params.confirmPassword) {
+            flash.message = "Password and Confirm Password do not match"
             render(view: "edit", model: [student: student])
             return
         }
 
-        flash.message = message(code: 'default.updated.message', args: [
-                message(code: 'student.label', default: 'Student'),
-                student.id
-        ])
+        try {
+            student.user.save(flush: true)
+            student.save(flush: true)
+        } catch (Exception e) {
+            flash.message = e.message
+            render(view: "edit", model: [student: student])
+            return
+        }
+
+        flash.message = "Student updated successfully"
         redirect(action: "show", id: student.id)
     }
+
 
     def delete(Long id) {
         def currentUser = springSecurityService.currentUser

@@ -14,18 +14,56 @@ class CourseController {
 
     CourseService courseService
     def springSecurityService
-
-    def index(Integer max) {
+    def index(Integer max, String query, String sortBy, String order) {
         params.max = Math.min(max ?: 10, 100)
+        if (!order) order = 'asc'
+
         def currentUser = springSecurityService.currentUser
         boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
 
+        def courses
+        def totalCount
+
+        if (query) {
+            courses = Course.createCriteria().list(params) {
+                or {
+                    ilike('title', "%${query}%")
+                    ilike('description', "%${query}%")
+
+                    // تحقق إن query رقم قبل المقارنة مع credits
+                    try {
+                        def queryDouble = query.toDouble()
+                        eq('credits', queryDouble)
+                    } catch (NumberFormatException e) {
+                        // إذا لم يكن رقم، تجاهل هذا الشرط
+                    }
+                }
+
+                if (sortBy) {
+                    order(sortBy, order)
+                }
+            }
+            totalCount = courses.totalCount
+        } else {
+            if (sortBy) {
+                params.sort = sortBy
+                params.order = order
+            }
+            courses = courseService.list(params)
+            totalCount = courseService.count()
+        }
+
         render(view: "index", model: [
-                courseList: courseService.list(params),
-                courseCount: courseService.count(),
-                isAdmin: isAdmin
+                courseList: courses,
+                courseCount: totalCount,
+                isAdmin: isAdmin,
+                query: query,
+                sortBy: sortBy,
+                order: order
         ])
     }
+
+
 
 
     def show(Long id) {
