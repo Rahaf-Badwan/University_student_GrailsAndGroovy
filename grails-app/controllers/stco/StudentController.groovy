@@ -3,8 +3,8 @@ package StCo
 import grails.rest.Resource
 import grails.validation.ValidationException
 import groovy.util.logging.Slf4j
-
 import grails.gorm.transactions.Transactional
+import org.springframework.security.crypto.password.PasswordEncoder
 
 import static org.springframework.http.HttpStatus.*
 
@@ -16,6 +16,7 @@ class StudentController {
 
     StudentService studentService
     def springSecurityService
+    PasswordEncoder passwordEncoder   // لإعادة تشفير الباسوورد
 
     def index(Integer max, String query, String sortBy) {
         params.max = Math.min(max ?: 10, 100)
@@ -29,7 +30,7 @@ class StudentController {
             // للأدمن: عرض كل الطلاب مع البحث
             if (query) {
                 studentList = Student.createCriteria().list(params) {
-                    createAlias('user', 'u') // لتجنب QueryException
+                    createAlias('user', 'u')
                     or {
                         ilike('name', "%${query}%")
                         ilike('email', "%${query}%")
@@ -69,9 +70,6 @@ class StudentController {
         ])
     }
 
-
-
-
     def create() {
         def currentUser = springSecurityService.currentUser
         if (!currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }) {
@@ -81,7 +79,8 @@ class StudentController {
         }
         render(view: "create", model: [student: new Student(params)])
     }
-    def show() {
+
+    def show(Long id) {
         def currentUser = springSecurityService.currentUser
         if (!currentUser) {
             flash.message = "Please login first"
@@ -89,14 +88,21 @@ class StudentController {
             return
         }
 
-        def student = Student.findByUser(currentUser)
+        boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
+        def student
+
+        if (isAdmin && id) {
+            student = Student.get(id)
+        } else {
+            student = Student.findByUser(currentUser)
+        }
+
         if (!student) {
             flash.message = "Student data not found."
             redirect(action: "index")
             return
         }
 
-        // جلب التسجيلات الخاصة بالطالب
         def enrollments = Enrollment.findAllByStudent(student)
         def courses = enrollments.collect { it.course }
 
@@ -105,21 +111,18 @@ class StudentController {
 
     @Transactional
     def save() {
-        // تحقق من تطابق كلمة السر أولًا
         if (params.password != params.passwordConfirm) {
             flash.message = "Passwords do not match"
             render(view: 'create', model: [params: params])
             return
         }
 
-        // إنشاء الـ User وحفظه أولًا
-        def user = new User(username: params.username, password: params.password)
+        def user = new User(username: params.username, password: passwordEncoder.encode(params.password))
         if (!user.save(flush: true)) {
             render(view: 'create', model: [params: params, user: user])
             return
         }
 
-        // الآن إنشاء الـ Student وربطه بالـ User
         def student = new Student(
                 name: params.name,
                 email: params.email,
@@ -137,16 +140,12 @@ class StudentController {
             return
         }
 
-        // ربط الـ User بالـ Role
         def role = Role.findByAuthority('ROLE_STUDENT')
         UserRole.create(user, role, true)
 
         flash.message = "Student and user created successfully"
         redirect(action: "index")
     }
-
-
-
 
     def edit(Long id) {
         def currentUser = springSecurityService.currentUser
@@ -165,6 +164,7 @@ class StudentController {
         render(view: "edit", model: [student: student])
     }
 
+    @Transactional
     def update() {
         def student = Student.get(params.id)
         if (!student) {
@@ -172,14 +172,15 @@ class StudentController {
             return
         }
 
-        student.properties = params
+        // تحديث خصائص الطالب فقط
+        student.properties['name','email'] = params
 
         // تحديث اسم المستخدم
         if (params.username) {
             student.user.username = params.username
         }
 
-        // تحديث كلمة المرور (لو غيرها)
+        // تحديث كلمة المرور (مع تشفير)
         if (params.password && params.password == params.confirmPassword) {
             student.user.password = params.password
         } else if (params.password != params.confirmPassword) {
@@ -188,9 +189,24 @@ class StudentController {
             return
         }
 
+        // ✅ تحديث صورة البروفايل
+        def photoFile = request.getFile('profilePhoto')
+        if (photoFile && !photoFile.empty) {
+            student.profilePhoto = photoFile.bytes
+            student.profilePhotoFilename = photoFile.originalFilename
+        }
+
         try {
-            student.user.save(flush: true)
-            student.save(flush: true)
+            if (!student.user.save(flush: true)) {
+                student.user.errors.allErrors.each { log.error it }
+                render(view: "edit", model: [student: student])
+                return
+            }
+            if (!student.save(flush: true)) {
+                student.errors.allErrors.each { log.error it }
+                render(view: "edit", model: [student: student])
+                return
+            }
         } catch (Exception e) {
             flash.message = e.message
             render(view: "edit", model: [student: student])
@@ -200,7 +216,6 @@ class StudentController {
         flash.message = "Student updated successfully"
         redirect(action: "show", id: student.id)
     }
-
 
     def delete(Long id) {
         def currentUser = springSecurityService.currentUser
@@ -231,7 +246,7 @@ class StudentController {
             response.status = 404
             return
         }
-        response.contentType = 'image/png' // يمكن ضبطها حسب نوع الصورة
+        response.contentType = 'image/png'
         response.outputStream << student.profilePhoto
         response.outputStream.flush()
     }

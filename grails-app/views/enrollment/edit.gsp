@@ -16,6 +16,7 @@
             <div class="alert alert-info mt-2">${flash.message}</div>
         </g:if>
 
+    <!-- عرض أخطاء التحقق -->
         <g:hasErrors bean="${enrollment}">
             <div class="alert alert-danger mt-3">
                 <ul>
@@ -26,49 +27,32 @@
             </div>
         </g:hasErrors>
 
-        <g:form resource="${enrollment}" method="PUT" class="mt-4">
+    <!-- النموذج -->
+        <g:form action="update" method="PUT" class="mt-4">
+            <g:hiddenField name="id" value="${enrollment?.id}" />
             <g:hiddenField name="version" value="${enrollment?.version}" />
 
-            <!-- اختيار الطالب -->
+            <!-- عرض الطالب بدون تعديل -->
             <div class="mb-3">
-                <label for="student.id" class="form-label">🧑‍🎓 Student:</label>
-                <g:select name="student.id"
-                          from="${students}"
-                          optionKey="id"
-                          optionValue="name"
-                          value="${enrollment?.student?.id}" />
-                <g:fieldError field="student" bean="${enrollment}" class="text-danger" />
+                <label class="form-label">🧑‍🎓 Student:</label>
+                <input type="text" class="form-control" value="${enrollment?.student?.name}" readonly />
             </div>
 
-            <!-- اختيار الكورس -->
+            <!-- عرض الكورس بدون تعديل -->
             <div class="mb-3">
-                <label for="course.id" class="form-label">🔷 Course:</label>
-                <g:select name="course.id"
-                          from="${courses}"
-                          optionKey="id"
-                          optionValue="title"
-                          value="${enrollment?.course?.id}" />
-                <g:fieldError field="course" bean="${enrollment}" class="text-danger" />
+                <label class="form-label">🔷 Course:</label>
+                <input type="text" class="form-control" value="${enrollment?.course?.title}" readonly />
             </div>
 
-            <!-- إدخال العلامة -->
+            <!-- تعديل العلامة فقط -->
             <div class="mb-3">
                 <label for="grade" class="form-label">📊 Grade:</label>
                 <input type="number" name="grade" step="0.1" min="0" max="4"
-                       value="${enrollment?.grade}" />
+                       value="${enrollment?.grade}" required class="form-control" />
                 <g:fieldError field="grade" bean="${enrollment}" class="text-danger" />
             </div>
 
-            <!-- إدخال تاريخ التسجيل -->
-            <div class="mb-3">
-                <label for="enrollmentDate" class="form-label">📅 Enrollment Date:</label>
-                <g:datePicker name="enrollmentDate"
-                              value="${enrollment?.enrollmentDate}"
-                              precision="day" />
-                <g:fieldError field="enrollmentDate" bean="${enrollment}" class="text-danger" />
-            </div>
-
-            <button type="submit" class="btn btn-success">Update Enrollment</button>
+            <button type="submit" class="btn btn-success">Update Grade</button>
         </g:form>
     </div>
 </div>
