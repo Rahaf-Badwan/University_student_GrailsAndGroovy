@@ -11,7 +11,12 @@ class Course {
     static constraints = {
         title blank: false
         description blank: false
-        credits nullable: false, min: 1d
+        credits validator: { val, obj ->
+            if (val > 10) {
+                return "course.credits.tooHigh"
+            }
+            return true
+        }
     }
 
     String toString(){

@@ -103,38 +103,30 @@ class StudentController {
         render(view: "show", model: [student: student, courses: courses])
     }
 
-
-
-
     @Transactional
     def save() {
-        // تحقق من تطابق كلمة السر وتأكيدها
+        // تحقق من تطابق كلمة السر أولًا
         if (params.password != params.passwordConfirm) {
             flash.message = "Passwords do not match"
             render(view: 'create', model: [params: params])
             return
         }
 
-        def user = new User(username: params.username)
-//        user.password = springSecurityService.encodePassword(params.password)
-        user.password =params.password
-
+        // إنشاء الـ User وحفظه أولًا
+        def user = new User(username: params.username, password: params.password)
         if (!user.save(flush: true)) {
-            // عرض الأخطاء على الفورم مع بيانات المستخدم (username مثلاً)
-            render(view: 'create', model: [user: user])
+            render(view: 'create', model: [params: params, user: user])
             return
         }
 
-        def role = Role.findByAuthority('ROLE_STUDENT')
-        UserRole.create(user, role, true)
-
-        def photoFile = request.getFile('profilePhoto')
+        // الآن إنشاء الـ Student وربطه بالـ User
         def student = new Student(
                 name: params.name,
                 email: params.email,
                 user: user
         )
 
+        def photoFile = request.getFile('profilePhoto')
         if (photoFile && !photoFile.empty) {
             student.profilePhoto = photoFile.bytes
             student.profilePhotoFilename = photoFile.originalFilename
@@ -144,6 +136,10 @@ class StudentController {
             render(view: 'create', model: [student: student])
             return
         }
+
+        // ربط الـ User بالـ Role
+        def role = Role.findByAuthority('ROLE_STUDENT')
+        UserRole.create(user, role, true)
 
         flash.message = "Student and user created successfully"
         redirect(action: "index")

@@ -25,18 +25,20 @@
             <div id="edit-student" class="col-12 content scaffold-edit" role="main">
                 <h1><g:message code="default.edit.label" args="[entityName]" /></h1>
 
+            <!-- Flash message -->
                 <g:if test="${flash.message}">
-                    <div class="message" role="status">${flash.message}</div>
+                    <div class="alert alert-warning mt-2">${flash.message}</div>
                 </g:if>
 
+            <!-- Form Errors -->
                 <g:hasErrors bean="${student}">
-                    <ul class="errors" role="alert">
-                        <g:eachError bean="${student}" var="error">
-                            <li <g:if test="${error instanceof org.springframework.validation.FieldError}">data-field-id="${error.field}"</g:if>>
-                                <g:message error="${error}"/>
-                            </li>
-                        </g:eachError>
-                    </ul>
+                    <div class="alert alert-danger mt-2">
+                        <ul>
+                            <g:eachError bean="${student}" var="error">
+                                <li><g:message error="${error}" /></li>
+                            </g:eachError>
+                        </ul>
+                    </div>
                 </g:hasErrors>
 
                 <g:form resource="${student}" method="PUT" enctype="multipart/form-data">
@@ -44,36 +46,42 @@
 
                     <fieldset class="form">
 
+                        <!-- Name -->
                         <div class="mb-3">
                             <label for="name">Name *</label>
                             <g:textField id="name" name="name" value="${student?.name}" required="required"/>
-                            <g:fieldError field="name" bean="${student}" class="text-danger" />
+                            <g:fieldError field="name" bean="${student}" class="text-danger"/>
                         </div>
 
+                        <!-- Email -->
                         <div class="mb-3">
                             <label for="email">Email *</label>
                             <g:textField id="email" name="email" value="${student?.email}" required="required"/>
-                            <g:fieldError field="email" bean="${student}" class="text-danger" />
+                            <g:fieldError field="email" bean="${student}" class="text-danger"/>
                         </div>
+
+                        <!-- Username -->
                         <div class="mb-3">
                             <label for="username">Username *</label>
                             <g:textField id="username" name="username" value="${student?.user?.username}" required="required" />
-                            <g:fieldError field="username" bean="${student?.user}" class="text-danger" />
+                            <g:fieldError field="username" bean="${student?.user}" class="text-danger"/>
                         </div>
 
+                        <!-- Password -->
                         <div class="mb-3">
                             <label for="password">Password</label>
                             <g:passwordField id="password" name="password" />
-                            <g:fieldError field="password" bean="${student?.user}" class="text-danger" />
+                            <g:fieldError field="password" bean="${student?.user}" class="text-danger"/>
                         </div>
 
+                        <!-- Confirm Password -->
                         <div class="mb-3">
                             <label for="confirmPassword">Confirm Password</label>
                             <g:passwordField id="confirmPassword" name="confirmPassword" />
-                            <!-- عادة ما يتم التحقق في الكود وليس من الجافا، فلا يوجد فالديرور هنا -->
+                            <!-- Errors for mismatch handled via flash.message in controller -->
                         </div>
 
-
+                        <!-- Profile Photo -->
                         <div class="mb-3">
                             <label for="profilePhoto">Profile Photo</label>
                             <g:if test="${student?.profilePhoto}">
@@ -84,14 +92,14 @@
                                 <small>Upload new image to replace the existing one</small>
                             </g:if>
                             <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" />
+                            <g:fieldError field="profilePhoto" bean="${student}" class="text-danger"/>
                         </div>
 
-
-                        <!-- No enrollments field here -->
                     </fieldset>
 
                     <fieldset class="buttons">
-                        <input class="save" type="submit" value="${message(code: 'default.button.update.label', default: 'Update')}" />
+                        <input class="btn btn-primary" type="submit" value="${message(code: 'default.button.update.label', default: 'Update')}" />
+                        <g:link class="btn btn-secondary ms-2" action="index">Cancel</g:link>
                     </fieldset>
                 </g:form>
             </div>
