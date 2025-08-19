@@ -17,6 +17,74 @@ grails:
       password:
         algorithm: bcrypt
 
+      # ================= Static Rules =================
+      controllerAnnotations:
+        staticRules:
+          # API paths → permitAll
+          - pattern: '/api/**'
+            access: ['permitAll']
+
+          # GSP pages → login required
+          - pattern: '/student/**'
+            access: ['IS_AUTHENTICATED_FULLY']
+          - pattern: '/course/**'
+            access: ['IS_AUTHENTICATED_FULLY']
+          - pattern: '/enrollment/**'
+            access: ['IS_AUTHENTICATED_FULLY']
+          - pattern: '/admin/**'
+            access: ['ROLE_ADMIN']
+          - pattern: '/user/**'
+            access: ['ROLE_USER','ROLE_ADMIN']
+
+          # الصفحات العامة
+          - pattern: '/'
+            access: ['permitAll']
+          - pattern: '/index'
+            access: ['permitAll']
+          - pattern: '/index.gsp'
+            access: ['permitAll']
+          - pattern: '/error'
+            access: ['permitAll']
+          - pattern: '/shutdown'
+            access: ['permitAll']
+          - pattern: '/assets/**'
+            access: ['permitAll']
+          - pattern: '/**/js/**'
+            access: ['permitAll']
+          - pattern: '/**/css/**'
+            access: ['permitAll']
+          - pattern: '/**/images/**'
+            access: ['permitAll']
+          - pattern: '/**/favicon.ico'
+            access: ['permitAll']
+
+          # أي شيء آخر يحتاج تسجيل دخول
+          - pattern: '/**'
+            access: ['IS_AUTHENTICATED_FULLY']
+
+      # ================= Filter Chain =================
+      filterChain:
+        chainMap:
+          # تجاهل الفلاتر للأصول الثابتة
+          - pattern: '/assets/**'
+            filters: 'none'
+          - pattern: '/**/js/**'
+            filters: 'none'
+          - pattern: '/**/css/**'
+            filters: 'none'
+          - pattern: '/**/images/**'
+            filters: 'none'
+          - pattern: '/**/favicon.ico'
+            filters: 'none'
+
+          # تعطيل الفلاتر للـ API → لا يحتاج login
+          - pattern: '/api/**'
+            filters: 'none'
+
+          # باقي النظام محمي
+          - pattern: '/**'
+            filters: 'JOINED_FILTERS'
+
 hibernate:
   cache:
     queries: false

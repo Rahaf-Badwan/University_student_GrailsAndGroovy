@@ -28,65 +28,59 @@
             <div id="create-student" class="col-12 content scaffold-create" role="main">
                 <h1><g:message code="default.create.label" args="[entityName]" /></h1>
 
-            <!-- Flash message -->
                 <g:if test="${flash.message}">
-                    <div class="alert alert-warning mt-2">${flash.message}</div>
+                    <div class="message" role="status">${flash.message}</div>
                 </g:if>
 
-            <!-- Form Errors -->
                 <g:hasErrors bean="${student}">
-                    <div class="alert alert-danger mt-2">
-                        <ul>
-                            <g:eachError bean="${student}" var="error">
-                                <li><g:message error="${error}" /></li>
-                            </g:eachError>
-                        </ul>
-                    </div>
+                    <ul class="errors" role="alert">
+                        <g:eachError bean="${student}" var="error">
+                            <li <g:if test="${error in org.springframework.validation.FieldError}">data-field-id="${error.field}"</g:if>>
+                                <g:message error="${error}"/>
+                            </li>
+                        </g:eachError>
+                    </ul>
                 </g:hasErrors>
 
                 <g:form controller="student" action="save" method="POST" enctype="multipart/form-data">
                     <div class="card p-4 shadow-sm">
                         <fieldset class="form">
 
-                            <!-- Name -->
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name *</label>
                                 <g:textField name="name" value="${student?.name}" required=""/>
-                                <g:fieldError bean="${student}" field="name" class="text-danger"/>
+                                <g:fieldError bean="${student}" field="name" class="text-danger" />
                             </div>
 
-                            <!-- Email -->
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email *</label>
                                 <g:textField name="email" value="${student?.email}" required=""/>
-                                <g:fieldError bean="${student}" field="email" class="text-danger"/>
+                                <g:fieldError bean="${student}" field="email" class="text-danger" />
                             </div>
 
-                            <!-- Username -->
+                            <!-- حقل اسم المستخدم -->
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username *</label>
                                 <input type="text" id="username" name="username" required="" value="${params.username ?: ''}" />
-                                <g:fieldError bean="${student}" field="user" class="text-danger"/>
                             </div>
 
-                            <!-- Password -->
+                            <!-- حقل كلمة السر -->
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password *</label>
                                 <input type="password" id="password" name="password" required="" />
-                                <g:fieldError bean="${student}" field="user" class="text-danger"/>
                             </div>
 
-                            <!-- Confirm Password -->
+                            <!-- حقل تأكيد كلمة السر -->
                             <div class="mb-3">
                                 <label for="passwordConfirm" class="form-label">Confirm Password *</label>
                                 <input type="password" id="passwordConfirm" name="passwordConfirm" required="" />
                             </div>
 
-                            <!-- Profile Photo -->
+                            <!-- حقل رفع الصورة -->
                             <div class="mb-3">
                                 <label for="profilePhoto" class="form-label">Profile Photo</label>
                                 <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" />
-                                <g:fieldError bean="${student}" field="profilePhoto" class="text-danger"/>
+                                <g:fieldError bean="${student}" field="profilePhoto" class="text-danger" />
                             </div>
 
                         </fieldset>

@@ -4,7 +4,7 @@ class UrlMappings {
 
     static mappings = {
 
-        // RESTful endpoints + GSP pages
+        // ================== GSP Pages ==================
         "/student"(controller: 'student') {
             action = [GET: 'index', POST: 'save']
         }
@@ -32,16 +32,38 @@ class UrlMappings {
         // GPA custom route
         "/enrollment/gpa"(controller: 'enrollment', action: 'gpa', method: 'GET')
 
-        // fallback
+
+        // ================== API Endpoints ==================
+        "/api/student"(controller: 'studentApi') {
+            action = [GET: 'index', POST: 'save']
+        }
+        "/api/student/$id"(controller: 'studentApi') {
+            action = [GET: 'show', PUT: 'update', DELETE: 'delete']
+        }
+
+        "/api/course"(controller: 'courseApi') {
+            action = [GET: 'index', POST: 'save']
+        }
+        "/api/course/$id"(controller: 'courseApi') {
+            action = [GET: 'show', PUT: 'update', DELETE: 'delete']
+        }
+
+        "/api/enrollment"(controller: 'enrollmentApi') {
+            action = [GET: 'index', POST: 'save']
+        }
+        "/api/enrollment/$id"(controller: 'enrollmentApi') {
+            action = [GET: 'show', PUT: 'update', DELETE: 'delete']
+        }
+
+        // fallback for GSP or API
         "/$controller/$action?/$id?(.$format)?" {
             constraints {
                 // apply constraints here
             }
         }
 
-        // home page → تفتح على Dashboard
+        // home page → Dashboard
         "/"(controller: "dashboard", action: "index")
-
 
         // errors
         "500"(view: '/error')

@@ -20,42 +20,42 @@ class StudentController {
 
     def index(Integer max, String query, String sortBy) {
         params.max = Math.min(max ?: 10, 100)
+
         def currentUser = springSecurityService.currentUser
+        if (!currentUser) {
+            flash.message = "Please login first"
+            redirect(controller: "login", action: "auth")
+            return
+        }
+
         boolean isAdmin = currentUser.authorities.any { it.authority == 'ROLE_ADMIN' }
 
         def studentList
         def studentCount
 
         if (isAdmin) {
-            // للأدمن: عرض كل الطلاب مع البحث
-            if (query) {
-                studentList = Student.createCriteria().list(params) {
-                    createAlias('user', 'u')
-                    or {
-                        ilike('name', "%${query}%")
-                        ilike('email', "%${query}%")
-                        ilike('u.username', "%${query}%")
-                    }
-                    if (sortBy) {
-                        if (sortBy == 'name') order('name', 'asc')
-                        else if (sortBy == 'email') order('email', 'asc')
-                        else if (sortBy == 'username') order('u.username', 'asc')
-                    }
+            studentList = query ? Student.createCriteria().list(params) {
+                createAlias('user', 'u')
+                or {
+                    ilike('name', "%${query}%")
+                    ilike('email', "%${query}%")
+                    ilike('u.username', "%${query}%")
                 }
-                studentCount = studentList.totalCount
-            } else {
-                studentList = Student.createCriteria().list(params) {
-                    createAlias('user', 'u')
-                    if (sortBy) {
-                        if (sortBy == 'name') order('name', 'asc')
-                        else if (sortBy == 'email') order('email', 'asc')
-                        else if (sortBy == 'username') order('u.username', 'asc')
-                    }
+                if (sortBy) {
+                    if (sortBy == 'name') order('name', 'asc')
+                    else if (sortBy == 'email') order('email', 'asc')
+                    else if (sortBy == 'username') order('u.username', 'asc')
                 }
-                studentCount = studentList.totalCount
+            } : Student.createCriteria().list(params) {
+                createAlias('user', 'u')
+                if (sortBy) {
+                    if (sortBy == 'name') order('name', 'asc')
+                    else if (sortBy == 'email') order('email', 'asc')
+                    else if (sortBy == 'username') order('u.username', 'asc')
+                }
             }
+            studentCount = studentList.totalCount
         } else {
-            // للمستخدم العادي: يعرض فقط الطالب المرتبط باليوزر الحالي
             def student = Student.findByUser(currentUser)
             studentList = student ? [student] : []
             studentCount = studentList.size()
