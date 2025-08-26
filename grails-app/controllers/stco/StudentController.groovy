@@ -1,6 +1,5 @@
 package StCo
 
-import grails.rest.Resource
 import grails.validation.ValidationException
 import groovy.util.logging.Slf4j
 import grails.gorm.transactions.Transactional
@@ -8,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 import static org.springframework.http.HttpStatus.*
 
-@Resource()
 @Slf4j
 class StudentController {
 
@@ -16,11 +14,12 @@ class StudentController {
 
     StudentService studentService
     def springSecurityService
-    PasswordEncoder passwordEncoder   // لإعادة تشفير الباسوورد
 
     def index(Integer max, String query, String sortBy) {
+        // Pagination: أقصى عدد 100، الافتراضي 10
         params.max = Math.min(max ?: 10, 100)
 
+        // جلب المستخدم الحالي
         def currentUser = springSecurityService.currentUser
         if (!currentUser) {
             flash.message = "Please login first"
@@ -35,32 +34,23 @@ class StudentController {
 
         if (isAdmin) {
             studentList = query ? Student.createCriteria().list(params) {
-                createAlias('user', 'u')
-                or {
-                    ilike('name', "%${query}%")
-                    ilike('email', "%${query}%")
-                    ilike('u.username', "%${query}%")
-                }
-                if (sortBy) {
-                    if (sortBy == 'name') order('name', 'asc')
-                    else if (sortBy == 'email') order('email', 'asc')
-                    else if (sortBy == 'username') order('u.username', 'asc')
-                }
+                // البحث فقط في الاسم
+                ilike('name', "%${query}%")
+                // الترتيب فقط على الاسم إذا تم تحديد sortBy
+                if (sortBy == 'name') order('name', 'asc')
             } : Student.createCriteria().list(params) {
-                createAlias('user', 'u')
-                if (sortBy) {
-                    if (sortBy == 'name') order('name', 'asc')
-                    else if (sortBy == 'email') order('email', 'asc')
-                    else if (sortBy == 'username') order('u.username', 'asc')
-                }
+                // بدون بحث، فقط ترتيب على الاسم إذا تم تحديد sortBy
+                if (sortBy == 'name') order('name', 'asc')
             }
             studentCount = studentList.totalCount
         } else {
+            // Normal User يرى بياناته فقط
             def student = Student.findByUser(currentUser)
             studentList = student ? [student] : []
             studentCount = studentList.size()
         }
 
+        // تمرير البيانات للـ GSP view
         render(view: "index", model: [
                 studentList: studentList,
                 studentCount: studentCount,
@@ -69,6 +59,7 @@ class StudentController {
                 sortBy: sortBy
         ])
     }
+
 
     def create() {
         def currentUser = springSecurityService.currentUser

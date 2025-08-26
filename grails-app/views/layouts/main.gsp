@@ -183,10 +183,12 @@
                     <li><g:link controller="student" action="index">👤 Student</g:link></li>
                     <li><g:link controller="course" action="index">📘 Course</g:link></li>
                     <li><g:link controller="enrollment" action="index">📝 Enrollment</g:link></li>
+                    <li><g:link controller="book" action="index">📚 Books</g:link></li>
                     <li>
                         <a href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">🚪 Logout</a>
                     </li>
                 </ul>
+
             </nav>
         </aside>
 
@@ -199,7 +201,7 @@
 
     <footer class="footer" role="contentinfo">
         <div class="container">
-            <p>&copy; <g:formatDate date="${new Date()}" format="yyyy"/> Grails Application. All rights reserved.</p>
+            <p>&copy; <g:formatDate date="${new Date()}" format="yyyy"/>EduTrack. All rights reserved.</p>
         </div>
     </footer>
 </sec:ifLoggedIn>
@@ -207,7 +209,7 @@
 <!-- صفحة تسجيل الدخول -->
 <sec:ifNotLoggedIn>
     <header class="login-header">
-        Welcome to My App
+        Welcome to EduTrack
     </header>
 
     <main class="main-content" style="flex: 1; margin-left: 0;">
@@ -217,7 +219,7 @@
     </main>
 
     <footer class="login-footer">
-        &copy; <g:formatDate date="${new Date()}" format="yyyy"/> My App. All rights reserved.
+        &copy; <g:formatDate date="${new Date()}" format="yyyy"/> EduTrack. All rights reserved.
     </footer>
 </sec:ifNotLoggedIn>
 

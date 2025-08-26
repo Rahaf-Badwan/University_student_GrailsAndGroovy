@@ -4,6 +4,74 @@
     <meta name="layout" content="main" />
     <g:set var="entityName" value="${message(code: 'course.label', default: 'Course')}" />
     <title><g:message code="default.list.label" args="[entityName]" /></title>
+    <style>
+    /* General body & headings */
+    body {
+        background-color: #f9f9f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    h1 {
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #0d6efd;
+    }
+
+    /* Table style */
+    .course-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .course-table th {
+        background-color: #f0f0f0; /* Header فاتح */
+        color: #000; /* نص أسود */
+        font-weight: bold;
+        cursor: pointer;
+        padding: 8px 12px; /* أصغر padding */
+        text-align: left;
+    }
+
+    .course-table td {
+        color: #000; /* نص أسود */
+        padding: 8px 12px; /* أصغر padding */
+        vertical-align: middle;
+    }
+
+    .course-table td a {
+        color: #0d6efd; /* رابط أزرق */
+        text-decoration: underline;
+    }
+
+    /* Search bar & dropdown */
+    .course-search-bar {
+        margin-bottom: 15px;
+    }
+
+    .course-search-bar .form-control {
+        height: 35px; /* تصغير مربع البحث */
+    }
+
+    .course-search-bar .form-select {
+        height: 35px; /* تصغير dropdown */
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    /* Buttons */
+    .course-btn {
+        border-radius: 8px;
+        padding: 6px 12px; /* أصغر حجم */
+    }
+
+    /* Optional: hover effect on table rows */
+    .course-table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+    </style>
+
+
 </head>
 <body>
 <div id="content" role="main">

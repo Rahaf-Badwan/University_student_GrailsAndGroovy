@@ -12,7 +12,7 @@ class EnrollmentApiController extends RestfulController<Enrollment> {
             save: 'POST', update: 'PUT', delete: 'DELETE'
     ]
 
-    EnrollmentApiService enrollmentApiService  // استخدم الخدمة الجديدة
+    EnrollmentApiService enrollmentApiService
 
     EnrollmentApiController() { super(Enrollment) }
 

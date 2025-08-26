@@ -47,7 +47,6 @@ class StudentApiController extends RestfulController<Student> {
 
         User.withTransaction { status ->
             try {
-                // إنشاء المستخدم، الباسوورد يتشفر تلقائياً بالlistener
                 def user = new User(
                         username: json.username,
                         password: json.password
