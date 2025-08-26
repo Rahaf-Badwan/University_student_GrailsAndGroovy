@@ -4,7 +4,8 @@ package StCo
 import groovy.json.JsonSlurper
 import grails.gorm.transactions.Transactional
 
-@Transactional   // <-- run the whole import in a DB transaction
+@Transactional
+// <-- run the whole import in a DB transaction
 class BookImportService {
 
     /**
@@ -36,15 +37,17 @@ class BookImportService {
         (json?.items ?: []).each { item ->
             String gid = item?.id as String
             def vi = item?.volumeInfo ?: [:]
-            if (!gid || !vi?.title) { skipped++; return }
+            if (!gid || !vi?.title) {
+                skipped++; return
+            }
 
-            String authors    = (vi.authors instanceof List) ? (vi.authors as List).join(", ") : (vi.authors ?: null)
+            String authors = (vi.authors instanceof List) ? (vi.authors as List).join(", ") : (vi.authors ?: null)
             String categories = (vi.categories instanceof List) ? (vi.categories as List).join(", ") : (vi.categories ?: null)
-            String thumb      = vi?.imageLinks?.thumbnail ?: vi?.imageLinks?.smallThumbnail
-            String preview    = vi?.previewLink
-            String desc       = vi?.description
-            String pub        = vi?.publishedDate
-            Integer pages     = (vi?.pageCount instanceof Number) ? (vi.pageCount as Integer) : null
+            String thumb = vi?.imageLinks?.thumbnail ?: vi?.imageLinks?.smallThumbnail
+            String preview = vi?.previewLink
+            String desc = vi?.description
+            String pub = vi?.publishedDate
+            Integer pages = (vi?.pageCount instanceof Number) ? (vi.pageCount as Integer) : null
 
             Book b = Book.findByGoogleId(gid)
             if (!b) {
@@ -66,14 +69,14 @@ class BookImportService {
                 }
             } else {
                 b.with {
-                    title            = vi.title ?: title
-                    authors          = authors ?: authors
-                    description      = desc ?: description
-                    thumbnailUrl     = thumb ?: thumbnailUrl
-                    previewLink      = preview ?: previewLink
+                    title = vi.title ?: title
+                    authors = authors ?: authors
+                    description = desc ?: description
+                    thumbnailUrl = thumb ?: thumbnailUrl
+                    previewLink = preview ?: previewLink
                     publishedDateRaw = pub ?: publishedDateRaw
-                    pageCount        = pages ?: pageCount
-                    categories       = categories ?: categories
+                    pageCount = pages ?: pageCount
+                    categories = categories ?: categories
                 }
                 if (b.isDirty() && b.save(flush: false, failOnError: false)) {
                     updated++

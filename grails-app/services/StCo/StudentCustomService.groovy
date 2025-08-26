@@ -11,10 +11,10 @@ class StudentCustomService {
 
     void deleteStudentWithUser(Long id) {
         Student student = Student.get(id)
-        if(student) {
+        if (student) {
             User user = student.user
             student.delete(flush: true)
-            if(user) {
+            if (user) {
                 user.delete(flush: true)
             }
         }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="layout" content="main" />
-    <g:set var="entityName" value="${message(code: 'course.label', default: 'Course')}" />
-    <title><g:message code="default.list.label" args="[entityName]" /></title>
+    <meta name="layout" content="main"/>
+    <g:set var="entityName" value="${message(code: 'course.label', default: 'Course')}"/>
+    <title><g:message code="default.list.label" args="[entityName]"/></title>
     <style>
     /* General body & headings */
     body {
@@ -71,8 +71,8 @@
     }
     </style>
 
-
 </head>
+
 <body>
 <div id="content" role="main">
     <div class="container">
@@ -80,17 +80,18 @@
         <!-- Navigation -->
         <section class="row">
             <a href="#list-course" class="skip" tabindex="-1">
-                <g:message code="default.link.skip.label" default="Skip to content…" />
+                <g:message code="default.link.skip.label" default="Skip to content…"/>
             </a>
+
             <div class="nav" role="navigation">
                 <ul>
                     <li><a class="home" href="${createLink(uri: '/')}">
-                        <g:message code="default.home.label" />
+                        <g:message code="default.home.label"/>
                     </a></li>
                     <g:if test="${isAdmin}">
                         <li>
                             <g:link class="create" action="create">
-                                <g:message code="default.new.label" args="[entityName]" />
+                                <g:message code="default.new.label" args="[entityName]"/>
                             </g:link>
                         </li>
                     </g:if>
@@ -104,7 +105,7 @@
                 <g:form controller="course" action="index" method="get" class="form-inline" id="searchForm">
                     <!-- البحث بالـ Title وDescription وCredits -->
                     <input type="text" name="query" placeholder="Search ..."
-                           value="${params.query ?: ''}" class="form-control mr-2" />
+                           value="${params.query ?: ''}" class="form-control mr-2"/>
 
                     <label for="sortBy" class="mr-2">Sort by:</label>
                     <select name="sortBy" id="sortBy" class="form-control mr-2" onchange="this.form.submit()">
@@ -122,7 +123,7 @@
         <!-- Course List -->
         <section class="row">
             <div id="list-course" class="col-12 content scaffold-list" role="main">
-                <h1><g:message code="default.list.label" args="[entityName]" /></h1>
+                <h1><g:message code="default.list.label" args="[entityName]"/></h1>
 
                 <g:if test="${flash.message}">
                     <div class="message" role="status">${flash.message}</div>
@@ -152,10 +153,12 @@
                             <td>${course.credits}</td>
                             <g:if test="${isAdmin}">
                                 <td>
-                                    <g:link class="btn btn-sm btn-primary" action="edit" resource="${course}">Edit</g:link>
-                                    <g:form action="delete" resource="${course}" method="DELETE" style="display:inline;">
+                                    <g:link class="btn btn-sm btn-primary" action="edit"
+                                            resource="${course}">Edit</g:link>
+                                    <g:form action="delete" resource="${course}" method="DELETE"
+                                            style="display:inline;">
                                         <input type="submit" class="btn btn-sm btn-danger" value="Delete"
-                                               onclick="return confirm('Are you sure you want to delete this course?');" />
+                                               onclick="return confirm('Are you sure you want to delete this course?');"/>
                                     </g:form>
                                 </td>
                             </g:if>
@@ -166,7 +169,7 @@
 
                 <g:if test="${courseCount > params.int('max')}">
                     <div class="pagination">
-                        <g:paginate total="${courseCount ?: 0}" />
+                        <g:paginate total="${courseCount ?: 0}"/>
                     </div>
                 </g:if>
             </div>

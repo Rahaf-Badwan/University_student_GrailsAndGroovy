@@ -4,14 +4,16 @@
     <meta name="layout" content="main"/>
     <title>Library</title>
 </head>
+
 <body>
 <h1>Library</h1>
 
 <!-- Search: submitting will import from Google and then list -->
 <g:form controller="book" action="index" method="get" class="form-inline" style="margin-bottom:1rem;">
-    <g:textField name="q" value="${q}" placeholder="Search books (title, author, category)" class="form-control" required="required"/>
-    <g:field type="number" name="externalMax" value="${externalMax ?: 20}" min="1" max="40" class="form-control" />
-    <g:submitButton name="search" value="Search & Save" class="btn btn-primary" />
+    <g:textField name="q" value="${q}" placeholder="Search books (title, author, category)" class="form-control"
+                 required="required"/>
+    <g:field type="number" name="externalMax" value="${externalMax ?: 20}" min="1" max="40" class="form-control"/>
+    <g:submitButton name="search" value="Search & Save" class="btn btn-primary"/>
     <g:link controller="book" action="index" class="btn btn-outline-primary">Clear</g:link>
 </g:form>
 
@@ -44,7 +46,8 @@
             <tr>
                 <td style="width:90px;text-align:center;">
                     <g:if test="${b.thumbnailUrl}">
-                        <img src="${b.thumbnailUrl}" alt="${b.title?.encodeAsHTML()}" style="max-width:80px; max-height:110px;"/>
+                        <img src="${b.thumbnailUrl}" alt="${b.title?.encodeAsHTML()}"
+                             style="max-width:80px; max-height:110px;"/>
                     </g:if>
                 </td>
                 <td><g:link controller="book" action="show" id="${b.id}">${b.title?.encodeAsHTML()}</g:link></td>

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="layout" content="main" />
+    <meta name="layout" content="main"/>
     <title>Create Enrollment</title>
 </head>
+
 <body>
 <div class="container mt-4">
     <h2>Create Enrollment</h2>
@@ -17,7 +18,7 @@
         <div class="alert alert-danger mt-3">
             <ul>
                 <g:eachError bean="${enrollment}" var="error">
-                    <li><g:message error="${error}" /></li>
+                    <li><g:message error="${error}"/></li>
                 </g:eachError>
             </ul>
         </div>
@@ -33,8 +34,8 @@
                       optionKey="id"
                       optionValue="name"
                       value="${enrollment?.student?.id}"
-                      noSelection="['':'👤 Please select a student']" />
-            <g:fieldError field="student" bean="${enrollment}" class="text-danger" />
+                      noSelection="['': '👤 Please select a student']"/>
+            <g:fieldError field="student" bean="${enrollment}" class="text-danger"/>
         </div>
 
         <!-- اختيار الكورس -->
@@ -45,16 +46,16 @@
                       optionKey="id"
                       optionValue="title"
                       value="${enrollment?.course?.id}"
-                      noSelection="['':'📘 Please select a course']" />
-            <g:fieldError field="course" bean="${enrollment}" class="text-danger" />
+                      noSelection="['': '📘 Please select a course']"/>
+            <g:fieldError field="course" bean="${enrollment}" class="text-danger"/>
         </div>
 
         <!-- إدخال العلامة -->
         <div class="mb-3">
             <label for="grade" class="form-label">📊 Grade:</label>
             <input type="number" name="grade" step="0.1" min="0" max="4"
-                   value="${enrollment?.grade}" />
-            <g:fieldError field="grade" bean="${enrollment}" class="text-danger" />
+                   value="${enrollment?.grade}"/>
+            <g:fieldError field="grade" bean="${enrollment}" class="text-danger"/>
         </div>
 
         <!-- إدخال تاريخ التسجيل -->
@@ -62,8 +63,8 @@
             <label for="enrollmentDate" class="form-label">📅 Enrollment Date:</label>
             <g:datePicker name="enrollmentDate"
                           value="${enrollment?.enrollmentDate ?: new Date()}"
-                          precision="day" />
-            <g:fieldError field="enrollmentDate" bean="${enrollment}" class="text-danger" />
+                          precision="day"/>
+            <g:fieldError field="enrollmentDate" bean="${enrollment}" class="text-danger"/>
         </div>
 
         <button type="submit" class="btn btn-primary">Enroll Student</button>

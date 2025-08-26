@@ -55,7 +55,7 @@
     /* input في login */
     body.login-page input[type="text"],
     body.login-page input[type="password"] {
-        color: #FFD700;  /* نص أصفر لامع */
+        color: #FFD700; /* نص أصفر لامع */
         background-color: #002244; /* خلفية أغمق */
         border: 1px solid #004080;
         padding: 0.5rem;
@@ -64,6 +64,7 @@
         box-sizing: border-box;
         margin-bottom: 1rem;
     }
+
     body.login-page input::placeholder {
         color: #FFD700;
         opacity: 0.8;
@@ -74,6 +75,7 @@
         display: flex;
         overflow: hidden;
     }
+
     /* Labels في صفحة login */
     body.login-page label {
         color: #003366; /* لون غامق قريب من الأسود */
@@ -97,33 +99,40 @@
         left: 0;
         z-index: 1000;
     }
+
     #sidebar.closed {
         transform: translateX(calc(-1 * var(--sidebar-width)));
     }
+
     #sidebar nav {
         flex-grow: 1;
         padding: 1rem;
     }
+
     #sidebar nav ul {
         list-style: none;
         padding: 0;
         margin: 0;
     }
+
     #sidebar nav ul li {
         padding: 15px 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
+
     #sidebar nav ul li a, #sidebar nav ul li g\\:link {
         color: white;
         text-decoration: none;
         display: block;
         font-weight: 600;
     }
+
     #sidebar nav ul li a:hover,
     #sidebar nav ul li g\\:link:hover {
         background-color: var(--secondary-color);
         cursor: pointer;
     }
+
     #toggle-btn {
         position: fixed;
         top: 10px;
@@ -147,6 +156,7 @@
         margin-left: var(--sidebar-width);
         transition: margin-left 0.3s ease;
     }
+
     main.main-content.sidebar-closed {
         margin-left: 0;
     }
@@ -167,7 +177,7 @@
     <g:layoutHead/>
 </head>
 
-<g:form id="logoutForm" url="[controller:'logout']" method="POST" style="display:none;"></g:form>
+<g:form id="logoutForm" url="[controller: 'logout']" method="POST" style="display:none;"></g:form>
 
 <body class="${controllerName == 'login' && actionName == 'auth' ? 'login-page' : ''}">
 
@@ -185,7 +195,8 @@
                     <li><g:link controller="enrollment" action="index">📝 Enrollment</g:link></li>
                     <li><g:link controller="book" action="index">📚 Books</g:link></li>
                     <li>
-                        <a href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">🚪 Logout</a>
+                        <a href="#" onclick="event.preventDefault();
+                        document.getElementById('logoutForm').submit();">🚪 Logout</a>
                     </li>
                 </ul>
 
@@ -234,7 +245,7 @@
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
 
-    if(toggleBtn && sidebar && mainContent) {
+    if (toggleBtn && sidebar && mainContent) {
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('closed');
             mainContent.classList.toggle('sidebar-closed');

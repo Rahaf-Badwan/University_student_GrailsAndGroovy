@@ -4,6 +4,7 @@
     <meta name="layout" content="main"/>
     <title>Welcome Page</title>
 </head>
+
 <body>
 <content tag="nav">
     <!-- (القائمة السابقة بنفس شكلها) -->
@@ -21,6 +22,7 @@
         <!-- للمدير فقط (ROLE_ADMIN) -->
             <sec:ifAllGranted roles="ROLE_ADMIN">
                 <h1>Welcome, Admin!</h1>
+
                 <p>You have access to manage courses, students, and enrollments.</p>
                 <ul>
                     <li><g:link controller="course" action="index">Manage Courses</g:link></li>
@@ -32,6 +34,7 @@
         <!-- للطلاب فقط (ROLE_STUDENT) -->
             <sec:ifAllGranted roles="ROLE_STUDENT">
                 <h1>Welcome, <sec:username/></h1>
+
                 <p>You can view available courses and your enrollments.</p>
                 <ul>
                     <li><g:link controller="course" action="index">View Courses</g:link></li>
