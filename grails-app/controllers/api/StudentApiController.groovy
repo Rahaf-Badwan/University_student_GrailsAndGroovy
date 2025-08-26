@@ -6,6 +6,7 @@ import StCo.Role
 import StCo.UserRole
 
 import grails.rest.RestfulController
+import grails.converters.JSON
 
 class StudentApiController extends RestfulController<Student> {
     static namespace = 'api'
@@ -17,24 +18,35 @@ class StudentApiController extends RestfulController<Student> {
 
     StudentApiController() { super(Student) }
 
+    // 🔹 Helper: تجهيز JSON مرتب
+    private Map toJson(Student s) {
+        return [
+                id        : s.id,
+                name      : s.name,
+                email     : s.email,
+                profilePhotoFilename: s.profilePhotoFilename,
+                profilePhotoUrl     : createLink(
+                        controller: 'student',
+                        action: 'profilePhoto',
+                        id: s.id,
+                        absolute: true
+                )
+        ]
+    }
+
     def index(Integer max, Integer offset) {
         params.max = Math.min(max ?: 20, 100)
         params.offset = offset ?: 0
-        respond Student.list(params), [status: 200]
+        def students = Student.list(params)
+        render students.collect { toJson(it) } as JSON
     }
 
-    // ===== Helper: استخراج userId بأمان من JSON =====
-    private Long extractUserId(def json) {
-        def v = null
-        if (json?.user instanceof Map && json.user.containsKey('id')) {
-            v = json.user.id
-        } else if (json?.containsKey('userId')) {
-            v = json.userId
+    def show(Long id) {
+        def student = Student.get(id)
+        if (!student) {
+            render status: 404; return
         }
-        if (v == null) return null
-        if (v instanceof Number) return ((Number) v).longValue()
-        def s = v.toString().trim()
-        return (s.isNumber()) ? s.toLong() : null
+        render toJson(student) as JSON
     }
 
     def save() {
@@ -60,12 +72,11 @@ class StudentApiController extends RestfulController<Student> {
                     return
                 }
 
-                // إنشاء الطالب وربطه بالمستخدم
                 def student = new Student(
-                        name: json.name,
+                        name : json.name,
                         email: json.email,
-                        photoUrl: json.photoUrl,
-                        user: user
+                        profilePhotoFilename: json.profilePhotoFilename,
+                        user : user
                 )
                 if (!student.save(flush: true)) {
                     status.setRollbackOnly()
@@ -73,8 +84,7 @@ class StudentApiController extends RestfulController<Student> {
                     return
                 }
 
-                respond student, [status: 201]
-
+                render toJson(student) as JSON
             } catch (Exception e) {
                 status.setRollbackOnly()
                 respond([message: 'حدث خطأ', error: e.message], [status: 500])
@@ -106,22 +116,18 @@ class StudentApiController extends RestfulController<Student> {
         Student.withTransaction { status ->
             if (json.containsKey('name')) student.name = json.name
             if (json.containsKey('email')) student.email = json.email
-            if (json.containsKey('photoUrl')) student.photoUrl = json.photoUrl
             if (json.containsKey('profilePhotoFilename')) student.profilePhotoFilename = json.profilePhotoFilename
 
-            // ✅ التعامل مع user
             if (json.user?.id) {
                 def newUser = User.get(json.user.id)
                 if (!newUser) {
                     respond([message: "User ${json.user.id} غير موجود"], [status: 404]); return
                 }
-
                 def other = Student.findByUser(newUser)
                 if (other && other.id != student.id) {
                     respond([message: "User ${json.user.id} مربوط لطالب آخر id=${other.id}"], [status: 409])
                     return
                 }
-
                 student.user = newUser
             }
 
@@ -136,8 +142,8 @@ class StudentApiController extends RestfulController<Student> {
                 return
             }
 
-            student.save()
-            respond student, [status: 200]
+            student.save(flush: true)
+            render toJson(student) as JSON
         }
     }
 
@@ -148,7 +154,6 @@ class StudentApiController extends RestfulController<Student> {
         if (!student) {
             render status: 404; return
         }
-
         Student.withTransaction { student.delete() }
         render status: 204
     }
