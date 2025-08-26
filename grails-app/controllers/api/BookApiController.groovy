@@ -15,7 +15,7 @@ class BookApiController extends RestfulController<Book> {
 
     BookApiController() { super(Book) }
 
-    // GET /api/book — عرض جميع الكتب
+    // GET /api/book — list all
     def index(Integer max) {
         params.max = Math.min(max ?: 20, 100)
         params.offset = params.int('offset') ?: 0
@@ -36,7 +36,7 @@ class BookApiController extends RestfulController<Book> {
         respond list
     }
 
-    // GET /api/book/fetch — استيراد من Google
+    // GET /api/book/fetch — import from Google
     def fetch() {
         try {
             def result = bookImportService.importFromGoogle(params.q ?: '', params.int('externalMax') ?: 20)
@@ -46,7 +46,7 @@ class BookApiController extends RestfulController<Book> {
         }
     }
 
-    // GET /api/book/{id} — عرض كتاب محدد
+    // GET /api/book/{id}
     def show(Long id) {
         def book = Book.get(id)
         if (!book) {
