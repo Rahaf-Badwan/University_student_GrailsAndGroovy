@@ -41,7 +41,7 @@ class BookApiController extends RestfulController<Book> {
         try {
             def result = bookImportService.importFromGoogle(params.q ?: '', params.int('externalMax') ?: 20)
             render([status: 'success', imported: result.size(), result: result] as JSON)
-        } catch(Exception e) {
+        } catch (Exception e) {
             render([status: 'error', message: e.message] as JSON)
         }
     }

@@ -9,7 +9,7 @@ class EnrollmentApiController extends RestfulController<Enrollment> {
     static responseFormats = ['json']
     static allowedMethods = [
             index: 'GET', show: 'GET',
-            save: 'POST', update: 'PUT', delete: 'DELETE'
+            save : 'POST', update: 'PUT', delete: 'DELETE'
     ]
 
     EnrollmentApiService enrollmentApiService

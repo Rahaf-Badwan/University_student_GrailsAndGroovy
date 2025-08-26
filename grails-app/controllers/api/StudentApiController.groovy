@@ -12,7 +12,7 @@ class StudentApiController extends RestfulController<Student> {
     static responseFormats = ['json']
     static allowedMethods = [
             index: 'GET', show: 'GET',
-            save: 'POST', update: 'PUT', delete: 'DELETE'
+            save : 'POST', update: 'PUT', delete: 'DELETE'
     ]
 
     StudentApiController() { super(Student) }
@@ -32,10 +32,11 @@ class StudentApiController extends RestfulController<Student> {
             v = json.userId
         }
         if (v == null) return null
-        if (v instanceof Number) return ((Number)v).longValue()
+        if (v instanceof Number) return ((Number) v).longValue()
         def s = v.toString().trim()
         return (s.isNumber()) ? s.toLong() : null
     }
+
     def save() {
         if (!(request.contentType?.toLowerCase()?.contains('application/json'))) {
             respond([message: 'Content-Type يجب أن يكون application/json'], [status: 415])
@@ -43,7 +44,9 @@ class StudentApiController extends RestfulController<Student> {
         }
 
         def json = request.JSON
-        if (!json) { respond([message: 'Body فارغ'], [status: 400]); return }
+        if (!json) {
+            respond([message: 'Body فارغ'], [status: 400]); return
+        }
 
         User.withTransaction { status ->
             try {
@@ -142,7 +145,9 @@ class StudentApiController extends RestfulController<Student> {
     def delete() {
         def id = params.long('id')
         def student = Student.get(id)
-        if (!student) { render status: 404; return }
+        if (!student) {
+            render status: 404; return
+        }
 
         Student.withTransaction { student.delete() }
         render status: 204

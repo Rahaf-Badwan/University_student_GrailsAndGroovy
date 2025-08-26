@@ -9,7 +9,7 @@ class CourseApiController extends RestfulController<Course> {
     static responseFormats = ['json']
     static allowedMethods = [
             index: 'GET', show: 'GET',
-            save: 'POST', update: 'PUT', delete: 'DELETE'
+            save : 'POST', update: 'PUT', delete: 'DELETE'
     ]
 
     CourseApiController() { super(Course) }
@@ -26,10 +26,14 @@ class CourseApiController extends RestfulController<Course> {
             respond([message: 'Content-Type لازم يكون application/json'], [status: 415]); return
         }
         def json
-        try { json = request.JSON } catch (ignored) {
+        try {
+            json = request.JSON
+        } catch (ignored) {
             respond([message: 'Body ليس JSON صالحاً'], [status: 400]); return
         }
-        if (!json) { respond([message: 'Body فاضي'], [status: 400]); return }
+        if (!json) {
+            respond([message: 'Body فاضي'], [status: 400]); return
+        }
 
         Course.withTransaction { status ->
             def course = new Course(json)
@@ -37,7 +41,7 @@ class CourseApiController extends RestfulController<Course> {
             if (!course.validate()) {
                 status.setRollbackOnly()
                 respond([
-                        message: 'Validation failed',
+                        message    : 'Validation failed',
                         fieldErrors: course.errors.fieldErrors.collect { fe ->
                             [field: fe.field, rejectedValue: fe.rejectedValue, code: fe.code, message: fe.defaultMessage]
                         }
@@ -56,10 +60,14 @@ class CourseApiController extends RestfulController<Course> {
         }
         def id = params.long('id')
         def course = Course.get(id)
-        if (!course) { render status: 404; return }
+        if (!course) {
+            render status: 404; return
+        }
 
         def json
-        try { json = request.JSON } catch (ignored) {
+        try {
+            json = request.JSON
+        } catch (ignored) {
             respond([message: 'Body ليس JSON صالحاً'], [status: 400]); return
         }
 
@@ -68,7 +76,7 @@ class CourseApiController extends RestfulController<Course> {
             if (!course.validate()) {
                 status.setRollbackOnly()
                 respond([
-                        message: 'Validation failed',
+                        message    : 'Validation failed',
                         fieldErrors: course.errors.fieldErrors.collect { fe ->
                             [field: fe.field, rejectedValue: fe.rejectedValue, code: fe.code, message: fe.defaultMessage]
                         }
@@ -83,7 +91,9 @@ class CourseApiController extends RestfulController<Course> {
     def delete() {
         def id = params.long('id')
         def course = Course.get(id)
-        if (!course) { render status: 404; return }
+        if (!course) {
+            render status: 404; return
+        }
         Course.withTransaction {
             course.delete()
         }

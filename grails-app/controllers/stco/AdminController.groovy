@@ -18,7 +18,7 @@ class AdminController {
     def saveUser() {
         def user = new User(params)
         user.password = springSecurityService.encodePassword(params.password)
-        if (!user.save(flush:true)) {
+        if (!user.save(flush: true)) {
             render(view: 'createUser', model: [user: user])
             return
         }
