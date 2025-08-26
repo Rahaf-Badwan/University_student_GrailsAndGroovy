@@ -108,7 +108,7 @@ class StudentController {
             return
         }
 
-        def user = new User(username: params.username, password: passwordEncoder.encode(params.password))
+        def user = new User(username: params.username, password: params.password)
         if (!user.save(flush: true)) {
             render(view: 'create', model: [params: params, user: user])
             return

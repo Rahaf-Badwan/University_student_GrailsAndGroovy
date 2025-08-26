@@ -19,15 +19,18 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
         [pattern: '/**/images/**', access: ['permitAll']],
         [pattern: '/**/favicon.ico', access: ['permitAll']],
 
-        // السماح الكامل لكل شيء تحت API (Postman)
-        [pattern: '/api/**', access: ['permitAll']],
+        // السماح لصفحة الكتب لليوزر والأدمن
+        [pattern: '/book/**', access: ['ROLE_USER', 'ROLE_ADMIN']],
 
-        // الكنترولرات العادية
+        // الكنترولرات الأخرى بعد صفحة الكتب
         [pattern: '/student/**', access: ['IS_AUTHENTICATED_FULLY']],
         [pattern: '/course/**', access: ['IS_AUTHENTICATED_FULLY']],
         [pattern: '/enrollment/**', access: ['IS_AUTHENTICATED_FULLY']],
         [pattern: '/admin/**', access: ['ROLE_ADMIN']],
         [pattern: '/user/**', access: ['ROLE_USER', 'ROLE_ADMIN']],
+
+        // السماح الكامل لكل شيء تحت API
+        [pattern: '/api/**', access: ['permitAll']],
 
         // أي شيء آخر يحتاج تسجيل دخول
         [pattern: '/**', access: ['IS_AUTHENTICATED_FULLY']]
