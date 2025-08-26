@@ -212,7 +212,7 @@
 
     <footer class="footer" role="contentinfo">
         <div class="container">
-            <p>&copy; <g:formatDate date="${new Date()}" format="yyyy"/>EduTrack. All rights reserved.</p>
+            <p>&copy; <g:formatDate date="${new Date()}" format="yyyy"/> EduTrack. All rights reserved.</p>
         </div>
     </footer>
 </sec:ifLoggedIn>
